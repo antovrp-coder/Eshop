@@ -21,7 +21,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -80,7 +79,7 @@ func Logger() Middleware {
 			duration := time.Since(start)
 			reqID, _ := r.Context().Value(RequestIDKey).(string)
 			log.Printf("[HTTP] req_id=%s method=%s path=%s status=%d duration=%s ip=%s",
-				reqID, r.Method, r.URL.Path, wrapped.status, r.RemoteAddr)
+				reqID, r.Method, r.URL.Path, wrapped.status, duration.String(), r.RemoteAddr)
 		})
 	}
 }
