@@ -1,0 +1,71 @@
+"""
+=============================================================================
+STYLEHOME ESHOP - GRAPHQL SCHEMA DEFINITIONS
+DOMAIN: CART & PROMOTIONS
+TECHNOLOGY: GraphQL BFF + Redis Active Sessions / PostgreSQL Persistence
+
+WHY GRAPHQL MUTATIONS FOR CART?
+1. Atomic Optimistic UI: React can dispatch mutations and receive the re-calculated
+   cart subtotal, discount lines, tax, and estimated shipping in a single reactive update.
+2. Guest-to-User Seamless Merge: Transparent handling of anonymous session carts
+   migrating to persistent user carts upon login.
+=============================================================================
+"""
+
+type CartItem {
+  id: ID!
+  variantId: ID!
+  sku: String!
+  product: Product!
+  variant: ProductVariant!
+  quantity: Int!
+  unitPrice: Money!
+  totalPrice: Money!
+  isAvailable: Boolean!
+}
+
+type AppliedCoupon {
+  code: String!
+  description: String
+  discountAmount: Money!
+  discountType: String!
+}
+
+type Cart {
+  id: ID!
+  userId: ID
+  items: [CartItem!]!
+  totalQuantity: Int!
+  subtotal: Money!
+  discountTotal: Money!
+  appliedCoupon: AppliedCoupon
+  estimatedTax: Money!
+  estimatedShipping: Money!
+  grandTotal: Money!
+  updatedAt: String!
+}
+
+input AddToCartInput {
+  variantId: ID!
+  quantity: Int!
+}
+
+input UpdateCartItemInput {
+  cartItemId: ID!
+  quantity: Int!
+}
+
+extend type Query {
+  # Retrieve current cart (by JWT User ID or Session Token header)
+  cart: Cart!
+}
+
+extend type Mutation {
+  addToCart(input: AddToCartInput!): Cart!
+  updateCartItemQuantity(input: UpdateCartItemInput!): Cart!
+  removeFromCart(cartItemId: ID!): Cart!
+  clearCart: Boolean!
+  applyCoupon(code: String!): Cart!
+  removeCoupon: Cart!
+  mergeGuestCart(guestCartToken: String!): Cart!
+}

@@ -1,0 +1,124 @@
+"""
+=============================================================================
+STYLEHOME ESHOP - GRAPHQL SCHEMA DEFINITIONS
+DOMAIN: USER & AUTHENTICATION
+TECHNOLOGY: GraphQL Schema Definition Language (SDL) for Backend-For-Frontend (BFF)
+
+BENEFITS OF GRAPHQL FOR USER DOMAIN:
+1. Declarative Data Fetching: React clients query exact user profile fields,
+   avoiding over-fetching sensitive internal fields.
+2. Unified Auth State: Resolves profile, addresses, wishlists, and active tokens
+   in a single roundtrip to optimize mobile/SPA initial render times.
+=============================================================================
+"""
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  VENDOR
+  SUPPORT
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  APPLE
+  FACEBOOK
+}
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  phoneNumber: String
+  role: Role!
+  isEmailVerified: Boolean!
+  isPhoneVerified: Boolean!
+  addresses: [Address!]!
+  defaultShippingAddressId: ID
+  defaultBillingAddressId: ID
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Address {
+  id: ID!
+  fullName: String!
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  stateProvince: String!
+  postalCode: String!
+  countryCode: String!
+  phoneNumber: String!
+  isDefaultShipping: Boolean!
+  isDefaultBilling: Boolean!
+}
+
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+  expiresIn: Int!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  phoneNumber: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input SocialLoginInput {
+  provider: AuthProvider!
+  idToken: String!
+}
+
+input AddressInput {
+  fullName: String!
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  stateProvince: String!
+  postalCode: String!
+  countryCode: String!
+  phoneNumber: String!
+  isDefaultShipping: Boolean
+  isDefaultBilling: Boolean
+}
+
+extend type Query {
+  # Current authenticated user profile
+  me: User
+  
+  # User address lookup
+  myAddresses: [Address!]!
+}
+
+extend type Mutation {
+  # Customer Registration & Authentication
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  socialLogin(input: SocialLoginInput!): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  logout: Boolean!
+
+  # Password & Verification Management
+  requestPasswordReset(email: String!): Boolean!
+  confirmPasswordReset(token: String!, newPassword: String!): Boolean!
+  verifyEmail(token: String!): Boolean!
+  
+  # Profile & Address Management
+  updateProfile(firstName: String, lastName: String, phoneNumber: String): User!
+  addAddress(input: AddressInput!): Address!
+  updateAddress(id: ID!, input: AddressInput!): Address!
+  deleteAddress(id: ID!): Boolean!
+  setDefaultShippingAddress(id: ID!): User!
+}

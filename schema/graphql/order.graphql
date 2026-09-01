@@ -1,0 +1,117 @@
+"""
+=============================================================================
+STYLEHOME ESHOP - GRAPHQL SCHEMA DEFINITIONS
+DOMAIN: CHECKOUT & ORDERS (CQRS Integration)
+TECHNOLOGY: GraphQL BFF invoking internal gRPC Command & Query pipelines
+
+WHY GRAPHQL FOR CHECKOUT & ORDERS?
+1. Client-Side Orchestration: Direct submission of checkout commands with client
+   idempotency keys, returning immediate order tracking entities.
+2. Real-Time Order Tracking: Queries structured for clean integration with React Query
+   and WebSocket subscriptions or polling.
+=============================================================================
+"""
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethodOption {
+  CREDIT_CARD
+  DEBIT_CARD
+  DIGITAL_WALLET
+  BNPL
+  CASH_ON_DELIVERY
+}
+
+type OrderLineItem {
+  id: ID!
+  sku: String!
+  productId: ID!
+  productTitle: String!
+  variantTitle: String
+  quantity: Int!
+  unitPrice: Money!
+  totalPrice: Money!
+  imageUrl: String
+}
+
+type Order {
+  id: ID!
+  orderNumber: String!
+  status: OrderStatus!
+  items: [OrderLineItem!]!
+  shippingAddress: Address!
+  billingAddress: Address!
+  subtotal: Money!
+  discountTotal: Money!
+  shippingFee: Money!
+  taxTotal: Money!
+  grandTotal: Money!
+  paymentMethod: PaymentMethodOption!
+  trackingNumber: String
+  carrier: String
+  invoiceUrl: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type OrderConnection {
+  orders: [Order!]!
+  pageInfo: PageInfo!
+}
+
+input CheckoutAddressInput {
+  fullName: String!
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  stateProvince: String!
+  postalCode: String!
+  countryCode: String!
+  phoneNumber: String!
+}
+
+input PlaceOrderInput {
+  idempotencyKey: String!
+  shippingAddress: CheckoutAddressInput!
+  billingAddress: CheckoutAddressInput
+  paymentMethod: PaymentMethodOption!
+  paymentToken: String! # PCI token from Stripe/Adyen SDK
+  shippingMethodId: String!
+  couponCode: String
+}
+
+type PlaceOrderPayload {
+  success: Boolean!
+  order: Order
+  transactionId: String
+  redirectUrl: String # 3D Secure / external verification if required
+  errorMessage: String
+}
+
+extend type Query {
+  # Customer order history (Cursor / page based)
+  myOrders(page: Int = 1, limit: Int = 10): OrderConnection!
+  
+  # Specific order details
+  orderById(id: ID!): Order
+  orderByNumber(orderNumber: String!): Order
+}
+
+extend type Mutation {
+  # Place Order: Dispatches CQRS CreateOrderCommand + AuthorizePayment via gRPC
+  placeOrder(input: PlaceOrderInput!): PlaceOrderPayload!
+  
+  # Customer cancels an order before shipment
+  cancelMyOrder(orderId: ID!, reason: String!): Boolean!
+  
+  # Request download URL for PDF tax invoice
+  generateInvoiceDownloadUrl(orderId: ID!): String!
+}

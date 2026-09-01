@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package payment.v1;
+
+option go_package = "github.com/stylehome/eshop/proto/payment/v1;paymentv1";
+
+import "google/protobuf/timestamp.proto";
+
+/**
+ * ============================================================================
+ * DOMAIN: PAYMENT SERVICE (StyleHome - Eshop)
+ * TECHNOLOGY: gRPC over HTTP/2 (Protobuf v3)
+ * PATTERN: Idempotent Payment Orchestration with PCI Tokenization
+ * 
+ * WHY gRPC FOR PAYMENT?
+ * 1. Financial Precision & Integrity: Strictly typed protobuf fields prevent loss
+ *    of floating precision by using integer cents / minor currency units.
+ * 2. Synchronous Guarantees: Checkout requires immediate synchronous authorization
+ *    before confirming order placement to the customer.
+ * 3. Idempotency Protection: Built-in gRPC metadata & payload tokens ensure no
+ *    duplicate card charges during transient gateway retries.
+ * ============================================================================
+ */
+
+service PaymentService {
+  // AuthorizePayment: Holds funds on the customer's payment method (Two-step payment).
+  rpc AuthorizePayment (AuthorizePaymentRequest) returns (AuthorizePaymentResponse);
+
+  // CapturePayment: Captures previously authorized funds upon order fulfillment/confirmation.
+  rpc CapturePayment (CapturePaymentRequest) returns (CapturePaymentResponse);
+
+  // RefundPayment: Issues partial or full refund for returned orders.
+  rpc RefundPayment (RefundPaymentRequest) returns (RefundPaymentResponse);
+
+  // VoidPayment: Cancels an active authorization (releasing held credit).
+  rpc VoidPayment (VoidPaymentRequest) returns (VoidPaymentResponse);
+
+  // GetPaymentStatus: Queries internal state + gateway sync for reconciliation.
+  rpc GetPaymentStatus (GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
+}
+
+enum PaymentMethodType {
+  PAYMENT_METHOD_TYPE_UNSPECIFIED = 0;
+  PAYMENT_METHOD_TYPE_CREDIT_CARD = 1;
+  PAYMENT_METHOD_TYPE_DEBIT_CARD = 2;
+  PAYMENT_METHOD_TYPE_DIGITAL_WALLET = 3; // Apple Pay, Google Pay
+  PAYMENT_METHOD_TYPE_BNPL = 4;           // Klarna, Afterpay
+  PAYMENT_METHOD_TYPE_CASH_ON_DELIVERY = 5;
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_AUTHORIZED = 2;
+  PAYMENT_STATUS_CAPTURED = 3;
+  PAYMENT_STATUS_VOIDED = 4;
+  PAYMENT_STATUS_REFUNDED = 5;
+  PAYMENT_STATUS_FAILED = 6;
+}
+
+message Money {
+  int64 amount_in_cents = 1; // E.g., $100.50 is represented as 10050 to eliminate floating-point errors
+  string currency = 2;       // ISO 4217 code (e.g. "USD", "EUR")
+}
+
+message AuthorizePaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  Money amount = 3;
+  PaymentMethodType payment_method_type = 4;
+  string payment_token = 5;      // PCI-compliant token from client SDK (Stripe/Adyen token)
+  string idempotency_key = 6;    // Crucial for zero double-billing
+  map<string, string> metadata = 7;
+}
+
+message AuthorizePaymentResponse {
+  bool success = 1;
+  string transaction_id = 2;
+  PaymentStatus status = 3;
+  string gateway_reference = 4;
+  string failure_code = 5;
+  string failure_message = 6;
+  google.protobuf.Timestamp authorized_at = 7;
+}
+
+message CapturePaymentRequest {
+  string transaction_id = 1;
+  string order_id = 2;
+  Money amount_to_capture = 3; // Allows partial capture if partial shipment
+  string idempotency_key = 4;
+}
+
+message CapturePaymentResponse {
+  bool success = 1;
+  PaymentStatus status = 2;
+  string gateway_capture_id = 3;
+  google.protobuf.Timestamp captured_at = 4;
+  string failure_message = 5;
+}
+
+message RefundPaymentRequest {
+  string transaction_id = 1;
+  string order_id = 2;
+  Money amount_to_refund = 3;
+  string reason = 4;
+  string idempotency_key = 5;
+}
+
+message RefundPaymentResponse {
+  bool success = 1;
+  string refund_id = 2;
+  PaymentStatus status = 3;
+  google.protobuf.Timestamp refunded_at = 4;
+}
+
+message VoidPaymentRequest {
+  string transaction_id = 1;
+  string order_id = 2;
+  string reason = 3;
+  string idempotency_key = 4;
+}
+
+message VoidPaymentResponse {
+  bool success = 1;
+  PaymentStatus status = 2;
+  google.protobuf.Timestamp voided_at = 3;
+}
+
+message GetPaymentStatusRequest {
+  string transaction_id = 1;
+  string order_id = 2;
+}
+
+message GetPaymentStatusResponse {
+  string transaction_id = 1;
+  string order_id = 2;
+  PaymentStatus status = 3;
+  Money amount = 4;
+  PaymentMethodType payment_method = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}

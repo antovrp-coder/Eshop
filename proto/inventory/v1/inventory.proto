@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+option go_package = "github.com/stylehome/eshop/proto/inventory/v1;inventoryv1";
+
+import "google/protobuf/timestamp.proto";
+
+/**
+ * ============================================================================
+ * DOMAIN: INVENTORY & STOCK MANAGEMENT SERVICE (StyleHome - Eshop)
+ * TECHNOLOGY: gRPC over HTTP/2 (Protobuf v3)
+ * PATTERN: Distributed Reservations with Idempotent Sagas (CQRS Integration)
+ * 
+ * WHY gRPC FOR INVENTORY?
+ * 1. Ultra-low Latency: Checkout & Cart services perform synchronous stock checks
+ *    and reservations. Protobuf binary serialization is 5-10x faster than JSON.
+ * 2. Strict Type Safety: Prevents overselling due to integer overflow/precision bugs.
+ * 3. Connection Multiplexing: HTTP/2 allows multiplexing high concurrency over
+ *    a single TCP connection, reducing TLS handshake and socket overhead under peak flash sales.
+ * ============================================================================
+ */
+
+service InventoryService {
+  // CheckStock: Fast, read-optimized synchronous stock validation across multi-warehouses.
+  rpc CheckStock (CheckStockRequest) returns (CheckStockResponse);
+
+  // ReserveStock: Transactional reservation using distributed locks / DB row locks.
+  // Generates a reservation token with a TTL (e.g., 15 minutes for checkout).
+  rpc ReserveStock (ReserveStockRequest) returns (ReserveStockResponse);
+
+  // CommitReservation: Called upon successful PaymentCaptured event (Saga confirmation).
+  rpc CommitReservation (CommitReservationRequest) returns (CommitReservationResponse);
+
+  // ReleaseReservation: Compensating action called if payment fails, order expires, or is canceled.
+  rpc ReleaseReservation (ReleaseReservationRequest) returns (ReleaseReservationResponse);
+
+  // UpdateStock: Backoffice / Vendor stock replenishment and threshold alerts.
+  rpc UpdateStock (UpdateStockRequest) returns (UpdateStockResponse);
+}
+
+message StockItem {
+  string product_id = 1;
+  string sku = 2;
+  int32 quantity = 3;
+  string warehouse_id = 4;
+}
+
+message CheckStockRequest {
+  repeated string skus = 1;
+  string region_code = 2;
+}
+
+message SkuStockInfo {
+  string sku = 1;
+  int32 available_quantity = 2;
+  int32 reserved_quantity = 3;
+  bool is_in_stock = 4;
+  bool allow_backorder = 5;
+}
+
+message CheckStockResponse {
+  repeated SkuStockInfo items = 1;
+}
+
+message ReserveItem {
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message ReserveStockRequest {
+  string order_id = 1;
+  string idempotency_key = 2; // Protects against double-reservation on network retry
+  repeated ReserveItem items = 3;
+  int32 hold_duration_seconds = 4; // TTL for holding inventory (e.g., 900s)
+  string region_code = 5;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  string reservation_id = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  string failure_reason = 4;
+  repeated string out_of_stock_skus = 5;
+}
+
+message CommitReservationRequest {
+  string reservation_id = 1;
+  string order_id = 2;
+  string idempotency_key = 3;
+}
+
+message CommitReservationResponse {
+  bool success = 1;
+  google.protobuf.Timestamp committed_at = 2;
+  string message = 3;
+}
+
+message ReleaseReservationRequest {
+  string reservation_id = 1;
+  string order_id = 2;
+  string reason = 3;
+  string idempotency_key = 4;
+}
+
+message ReleaseReservationResponse {
+  bool success = 1;
+  google.protobuf.Timestamp released_at = 2;
+}
+
+message UpdateStockRequest {
+  string sku = 1;
+  string warehouse_id = 2;
+  int32 quantity_delta = 3; // Positive for restock, negative for shrinkage/adjustment
+  string reason = 4;
+  string idempotency_key = 5;
+}
+
+message UpdateStockResponse {
+  string sku = 1;
+  int32 new_total_quantity = 2;
+  int32 new_available_quantity = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}

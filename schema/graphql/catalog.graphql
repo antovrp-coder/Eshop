@@ -1,0 +1,156 @@
+"""
+=============================================================================
+STYLEHOME ESHOP - GRAPHQL SCHEMA DEFINITIONS
+DOMAIN: CATALOG, SEARCH & DISCOVERY
+TECHNOLOGY: GraphQL BFF integrating Elasticsearch & PostgreSQL
+
+WHY ELASTICSEARCH INTEGRATION HERE?
+1. Full-Text Search: Uses edge n-grams, fuzzy matching, and phonetic analyzers.
+2. Faceted Aggregations: Dynamically computes brand counts, price histograms, and attribute
+   filter buckets in sub-millisecond response times.
+3. Suggestion & Autocomplete: Provides instant completion queries for search bars.
+=============================================================================
+"""
+
+type Money {
+  amountInCents: Int!
+  currency: String!
+  formatted: String!
+}
+
+type ProductVariant {
+  id: ID!
+  sku: String!
+  title: String!
+  price: Money!
+  compareAtPrice: Money
+  attributes: [ProductAttribute!]!
+  inStock: Boolean!
+  inventoryCount: Int
+  image: Image
+}
+
+type ProductAttribute {
+  name: String!  # e.g., "Color", "Size", "Material"
+  value: String! # e.g., "Navy Blue", "XL", "Solid Teak Wood"
+}
+
+type Image {
+  id: ID!
+  url: String!
+  altText: String
+  width: Int
+  height: Int
+}
+
+type Category {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  parentId: ID
+  parent: Category
+  children: [Category!]!
+  imageUrl: String
+}
+
+type Product {
+  id: ID!
+  title: String!
+  slug: String!
+  description: String!
+  brand: String!
+  category: Category!
+  tags: [String!]!
+  images: [Image!]!
+  featuredImage: Image
+  basePrice: Money!
+  variants: [ProductVariant!]!
+  averageRating: Float!
+  reviewCount: Int!
+  isFeatured: Boolean!
+  seoTitle: String
+  seoDescription: String
+  createdAt: String!
+}
+
+# Faceted Search Types (Elasticsearch Aggregations)
+type FacetBucket {
+  key: String!
+  count: Int!
+  label: String
+}
+
+type FacetGroup {
+  name: String!
+  field: String!
+  buckets: [FacetBucket!]!
+}
+
+type SearchResultsConnection {
+  products: [Product!]!
+  totalCount: Int!
+  facets: [FacetGroup!]!
+  suggestions: [String!]!
+  pageInfo: PageInfo!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+  totalItems: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+input PriceRangeInput {
+  min: Int
+  max: Int
+}
+
+input AttributeFilterInput {
+  name: String!
+  values: [String!]!
+}
+
+enum ProductSortOption {
+  RELEVANCE
+  PRICE_ASC
+  PRICE_DESC
+  NEWEST
+  POPULARITY
+  RATING
+}
+
+input SearchProductsInput {
+  query: String
+  categorySlug: String
+  brands: [String!]
+  priceRange: PriceRangeInput
+  attributes: [AttributeFilterInput!]
+  inStockOnly: Boolean
+  sortBy: ProductSortOption
+  page: Int = 1
+  limit: Int = 24
+}
+
+extend type Query {
+  # Direct Catalog Query (PostgreSQL / Redis cache)
+  productBySlug(slug: String!): Product
+  productById(id: ID!): Product
+  categories(parentSlug: String): [Category!]!
+  categoryBySlug(slug: String!): Category
+
+  # Elasticsearch Full-Text & Faceted Search Query
+  searchProducts(input: SearchProductsInput!): SearchResultsConnection!
+
+  # Elasticsearch Autocomplete Query
+  searchSuggestions(prefix: String!): [String!]!
+
+  # Recommendation Queries
+  recentlyViewedProducts(productIds: [ID!]!): [Product!]!
+  similarProducts(productId: ID!, limit: Int = 6): [Product!]!
+  trendingProducts(limit: Int = 8): [Product!]!
+}

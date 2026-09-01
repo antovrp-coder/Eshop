@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package orders.v1;
+
+option go_package = "github.com/stylehome/eshop/proto/orders/v1;ordersv1";
+
+import "google/protobuf/timestamp.proto";
+import "payment/v1/payment.proto";
+
+/**
+ * ============================================================================
+ * DOMAIN: ORDERS SERVICE (StyleHome - Eshop)
+ * TECHNOLOGY: gRPC over HTTP/2 & CQRS (Command Query Responsibility Segregation)
+ * PATTERN: Command Bus, Saga Orchestration, and Read-Model Queries
+ * 
+ * WHY CQRS FOR ORDERS?
+ * 1. Write Side (Commands): Handles high-stress order placement, stock verification,
+ *    payment orchestration, and status transition state machines. Writes to PostgreSQL (Eshop db)
+ *    and appends domain events to Transactional Outbox.
+ * 2. Read Side (Queries): Read models aggregated and cached in Redis / Elasticsearch
+ *    for instantaneous customer order history and warehouse fulfillment dashboards.
+ * ============================================================================
+ */
+
+service OrderInternalService {
+  // CreateOrderCommand: Validates and creates an order in PENDING_PAYMENT state.
+  rpc CreateOrder (CreateOrderCommandRequest) returns (CreateOrderCommandResponse);
+
+  // CancelOrderCommand: Executes cancellation state transition and emits OrderCancelled domain event.
+  rpc CancelOrder (CancelOrderCommandRequest) returns (CancelOrderCommandResponse);
+
+  // UpdateOrderStatusCommand: State machine update invoked by fulfillment or saga steps.
+  rpc UpdateOrderStatus (UpdateOrderStatusCommandRequest) returns (UpdateOrderStatusCommandResponse);
+
+  // GetOrderQuery: Internal fast query for inventory/fulfillment/support microservices.
+  rpc GetOrder (GetOrderQueryRequest) returns (GetOrderQueryResponse);
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING_PAYMENT = 1;
+  ORDER_STATUS_PAYMENT_CONFIRMED = 2;
+  ORDER_STATUS_PROCESSING = 3;
+  ORDER_STATUS_SHIPPED = 4;
+  ORDER_STATUS_DELIVERED = 5;
+  ORDER_STATUS_CANCELLED = 6;
+  ORDER_STATUS_REFUNDED = 7;
+}
+
+message OrderItem {
+  string sku = 1;
+  string product_id = 2;
+  string title = 3;
+  int32 quantity = 4;
+  payment.v1.Money unit_price = 5;
+  payment.v1.Money total_price = 6;
+  string image_url = 7;
+}
+
+message ShippingAddress {
+  string full_name = 1;
+  string street_line1 = 2;
+  string street_line2 = 3;
+  string city = 4;
+  string state_province = 5;
+  string postal_code = 6;
+  string country_code = 7;
+  string phone_number = 8;
+}
+
+message CreateOrderCommandRequest {
+  string user_id = 1;
+  string idempotency_key = 2;
+  repeated OrderItem items = 3;
+  ShippingAddress shipping_address = 4;
+  string coupon_code = 5;
+  payment.v1.Money discount_amount = 6;
+  payment.v1.Money shipping_cost = 7;
+  payment.v1.Money tax_amount = 8;
+  payment.v1.Money grand_total = 9;
+  string reservation_id = 10; // Link to the temporary inventory reservation
+}
+
+message CreateOrderCommandResponse {
+  bool success = 1;
+  string order_id = 2;
+  OrderStatus status = 3;
+  google.protobuf.Timestamp created_at = 4;
+  string error_message = 5;
+}
+
+message CancelOrderCommandRequest {
+  string order_id = 1;
+  string user_id = 2;
+  string reason = 3;
+  string idempotency_key = 4;
+}
+
+message CancelOrderCommandResponse {
+  bool success = 1;
+  OrderStatus status = 2;
+  google.protobuf.Timestamp cancelled_at = 3;
+}
+
+message UpdateOrderStatusCommandRequest {
+  string order_id = 1;
+  OrderStatus new_status = 2;
+  string tracking_number = 3;
+  string carrier = 4;
+  string remarks = 5;
+}
+
+message UpdateOrderStatusCommandResponse {
+  bool success = 1;
+  OrderStatus current_status = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message GetOrderQueryRequest {
+  string order_id = 1;
+}
+
+message GetOrderQueryResponse {
+  string order_id = 1;
+  string user_id = 2;
+  OrderStatus status = 3;
+  repeated OrderItem items = 4;
+  ShippingAddress shipping_address = 5;
+  payment.v1.Money grand_total = 6;
+  string tracking_number = 7;
+  string carrier = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
