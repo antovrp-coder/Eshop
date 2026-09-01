@@ -46,18 +46,75 @@ type StockInfo struct {
 }
 
 type Service struct {
-	mu           sync.Mutex
+	mu           sync.RWMutex
 	stocks       map[string]*domain.StockLevel
 	reservations map[string]*domain.StockReservation
+	stopChan     chan struct{}
 }
 
-func NewService() *Service {
+func NewService(ctx context.Context) *Service {
 	s := &Service{
 		stocks:       make(map[string]*domain.StockLevel),
 		reservations: make(map[string]*domain.StockReservation),
+		stopChan:     make(chan struct{}),
 	}
 	s.seedDefaultInventory()
+	s.startBackgroundReservationReaper(ctx)
 	return s
+}
+
+/**
+ * ============================================================================
+ * CONCURRENCY PATTERN: Background Periodic Reaper (time.Ticker + select)
+ * 
+ * WHY A BACKGROUND CLEANER GOROUTINE?
+ * When customers start checkout, inventory is held for 15 minutes. If they abandon
+ * the cart or lose internet connection, this background goroutine automatically
+ * identifies expired reservations, releases held stock back to the available pool,
+ * and prevents stock from being permanently locked up.
+ * ============================================================================
+ */
+func (s *Service) startBackgroundReservationReaper(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				return
+			case <-s.stopChan:
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				s.reapExpiredReservations()
+			}
+		}
+	}()
+}
+
+func (s *Service) reapExpiredReservations() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	for _, res := range s.reservations {
+		if res.Status == domain.ReservationHeld && now.After(res.ExpiresAt) {
+			if stock, exists := s.stocks[res.SKU]; exists {
+				stock.Reserved -= res.Quantity
+				if stock.Reserved < 0 {
+					stock.Reserved = 0
+				}
+				stock.UpdatedAt = now
+			}
+			res.Status = domain.ReservationExpired
+		}
+	}
+}
+
+// Stop stops the background reaper goroutine gracefully
+func (s *Service) Stop() {
+	close(s.stopChan)
 }
 
 func (s *Service) seedDefaultInventory() {
@@ -86,25 +143,48 @@ func (s *Service) seedDefaultInventory() {
 	}
 }
 
-// CheckStock provides fast stock lookups (CQRS Query Path)
+/**
+ * ============================================================================
+ * CONCURRENCY PATTERN: Parallel Multi-SKU Validation (sync.WaitGroup + sync.RWMutex)
+ * 
+ * WHY PARALLEL STOCK LOOKUP?
+ * In multi-item carts (e.g. 10+ items), inspecting physical and reserved levels
+ * across multiple warehouse partitions sequentially creates latency additive to cart size.
+ * Concurrent worker goroutines process SKU lookups in parallel.
+ * ============================================================================
+ */
 func (s *Service) CheckStock(ctx context.Context, skus []string) map[string]StockInfo {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	result := make(map[string]StockInfo)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
 	for _, sku := range skus {
-		if stock, exists := s.stocks[sku]; exists {
-			avail := stock.Available()
-			result[sku] = StockInfo{
-				SKU:       sku,
-				Available: avail,
-				Reserved:  stock.Reserved,
-				InStock:   avail > 0,
+		wg.Add(1)
+		go func(skuKey string) {
+			defer wg.Done()
+			var info StockInfo
+			if stock, exists := s.stocks[skuKey]; exists {
+				avail := stock.Available()
+				info = StockInfo{
+					SKU:       skuKey,
+					Available: avail,
+					Reserved:  stock.Reserved,
+					InStock:   avail > 0,
+				}
+			} else {
+				info = StockInfo{SKU: skuKey, Available: 0, Reserved: 0, InStock: false}
 			}
-		} else {
-			result[sku] = StockInfo{SKU: sku, Available: 0, Reserved: 0, InStock: false}
-		}
+
+			mu.Lock()
+			result[skuKey] = info
+			mu.Unlock()
+		}(sku)
 	}
+
+	wg.Wait()
 	return result
 }
 

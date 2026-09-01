@@ -37,7 +37,10 @@ func main() {
 	log.Println("  Architecture: Zero-Framework Go net/http + GraphQL BFF + gRPC + CQRS")
 	log.Println("================================================================")
 
-	// 1. Initialize Shared Infrastructure & Database Connection
+	// 1. Initialize Root Context & Shared Infrastructure
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	dbCfg := database.DefaultConfig()
 	dbPool, err := database.Connect(ctx, dbCfg)
 	if err != nil {
@@ -52,13 +55,10 @@ func main() {
 	idempMgr := idempotency.NewManager(24 * time.Hour)
 	memPub := outbox.NewMemoryPublisher()
 	outboxWorker := outbox.NewWorker(memPub)
-	
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	outboxWorker.Start(ctx)
 
 	// 2. Initialize Microservices & Domain Services
-	invSvc := inventoryService.NewService()
+	invSvc := inventoryService.NewService(ctx)
 	paySvc := paymentService.NewService(idempMgr)
 	catSvc := catalogService.NewService()
 	srcSvc := searchService.NewService(catSvc)

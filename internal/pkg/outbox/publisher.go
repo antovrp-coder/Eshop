@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stylehome/eshop/internal/pkg/concurrency"
 	"github.com/stylehome/eshop/internal/pkg/events"
 )
 
@@ -63,6 +64,7 @@ func (m *MemoryEventPublisher) Publish(ctx context.Context, topic string, key st
 type Worker struct {
 	publisher EventPublisher
 	records   []OutboxRecord
+	pool      *concurrency.Pool
 	mu        sync.Mutex
 	stopChan  chan struct{}
 }
@@ -82,9 +84,20 @@ func (w *Worker) StageEvent(rec OutboxRecord) {
 	w.records = append(w.records, rec)
 }
 
-// Start begins the asynchronous poller
+/**
+ * ============================================================================
+ * CONCURRENCY PATTERN: Asynchronous Outbox Worker Pool
+ * 
+ * WHY A CONCURRENT DISPATCHER POOL?
+ * Publishing events to Kafka brokers over the network involves socket I/O latency.
+ * Running event dispatchers concurrently over a bounded pool of 10 workers ensures
+ * high-throughput order event streaming (e.g. 5,000 events/sec) without stalling the poller loop.
+ * ============================================================================
+ */
 func (w *Worker) Start(ctx context.Context) {
+	w.pool = concurrency.NewPool(ctx, 10, 1000)
 	ticker := time.NewTicker(200 * time.Millisecond)
+
 	go func() {
 		for {
 			select {
@@ -92,9 +105,15 @@ func (w *Worker) Start(ctx context.Context) {
 				w.flush(ctx)
 			case <-w.stopChan:
 				ticker.Stop()
+				if w.pool != nil {
+					w.pool.Stop()
+				}
 				return
 			case <-ctx.Done():
 				ticker.Stop()
+				if w.pool != nil {
+					w.pool.Stop()
+				}
 				return
 			}
 		}
@@ -111,14 +130,22 @@ func (w *Worker) flush(ctx context.Context) {
 
 	for i := range w.records {
 		if !w.records[i].Published {
+			idx := i
 			topic := events.TopicOrderEvents
-			if w.records[i].AggregateType == "PAYMENT" {
+			if w.records[idx].AggregateType == "PAYMENT" {
 				topic = events.TopicPaymentEvents
 			}
-			err := w.publisher.Publish(ctx, topic, w.records[i].AggregateID, w.records[i].Payload)
-			if err == nil {
-				w.records[i].Published = true
-			}
+
+			// Concurrently dispatch event via worker pool
+			_ = w.pool.Submit(func(jobCtx context.Context) error {
+				err := w.publisher.Publish(jobCtx, topic, w.records[idx].AggregateID, w.records[idx].Payload)
+				if err == nil {
+					w.mu.Lock()
+					w.records[idx].Published = true
+					w.mu.Unlock()
+				}
+				return err
+			})
 		}
 	}
 }

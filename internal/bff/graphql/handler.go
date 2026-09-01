@@ -20,9 +20,11 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
 	cartDomain "github.com/stylehome/eshop/internal/cart/domain"
 	cartService "github.com/stylehome/eshop/internal/cart/service"
+	catalogDomain "github.com/stylehome/eshop/internal/catalog/domain"
 	catalogService "github.com/stylehome/eshop/internal/catalog/service"
 	ordersApplication "github.com/stylehome/eshop/internal/orders/application"
 	ordersDomain "github.com/stylehome/eshop/internal/orders/domain"
@@ -329,6 +331,54 @@ func (h *Handler) Execute(ctx context.Context, req GraphQLRequest) GraphQLRespon
 					"totalItems": len(orders),
 				},
 			},
+		}}
+	}
+
+	/**
+	 * ============================================================================
+	 * CONCURRENCY PATTERN: Fan-Out / Fan-In Parallel Aggregations (sync.WaitGroup)
+	 * 
+	 * WHY PARALLEL RESOLVER EXECUTION?
+	 * When the homepage or catalog renders, it requires:
+	 * 1. Product Catalog items
+	 * 2. Categories hierarchy
+	 * 3. User's active Cart state
+	 * Instead of serial execution (T1 + T2 + T3 = 150ms), executing all 3 resolvers
+	 * concurrently in separate goroutines reduces latency to max(T1, T2, T3) = 50ms.
+	 * ============================================================================
+	 */
+	if strings.Contains(q, "HomeAggregate") || strings.Contains(q, "products") {
+		var wg sync.WaitGroup
+		var prods []*catalogDomain.Product
+		var cats []*catalogDomain.Category
+		var cart *cartDomain.Cart
+
+		wg.Add(3)
+
+		// Goroutine 1: Fetch Products
+		go func() {
+			defer wg.Done()
+			prods = h.catalogSvc.ListAllProducts(ctx)
+		}()
+
+		// Goroutine 2: Fetch Categories
+		go func() {
+			defer wg.Done()
+			cats = h.catalogSvc.ListCategories(ctx)
+		}()
+
+		// Goroutine 3: Fetch Cart
+		go func() {
+			defer wg.Done()
+			cart = h.cartSvc.GetOrCreateCart(ctx, sessionID, userID != "")
+		}()
+
+		wg.Wait()
+
+		return GraphQLResponse{Data: map[string]interface{}{
+			"products":   prods,
+			"categories": cats,
+			"cart":       cart,
 		}}
 	}
 
