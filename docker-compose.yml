@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # 1. PRIMARY TRANSACTIONAL DATABASE (Eshop PostgreSQL Cluster)
+  # ===========================================================================
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: stylehome-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: Eshop
+      POSTGRES_USER: eshop_admin
+      POSTGRES_PASSWORD: eshop_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema/migrations/001_initial_eshop_schema.sql:/docker-entrypoint-initdb.d/001_initial_eshop_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eshop_admin -d Eshop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # 2. PRODUCT SEARCH & DISCOVERY (Elasticsearch Cluster)
+  # ===========================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: stylehome-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status'"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ===========================================================================
+  # 3. DISTRIBUTED IN-MEMORY STORE (Redis Cluster)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: stylehome-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_secure_pass_2026
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_secure_pass_2026", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # 4. EVENT STREAMING BUS (Apache Kafka & Zookeeper)
+  # ===========================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: stylehome-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: stylehome-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # ===========================================================================
+  # 5. GO STANDARD LIBRARY BFF & MICROSERVICES ENGINE
+  # ===========================================================================
+  backend-bff:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    container_name: stylehome-backend-bff
+    restart: unless-stopped
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://eshop_admin:eshop_secure_password_2026@postgres-db:5432/Eshop?sslmode=disable
+      REDIS_ADDR: redis:6379
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KAFKA_BROKERS: kafka:29092
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+  esdata:
+  redisdata:

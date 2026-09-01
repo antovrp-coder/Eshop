@@ -1,0 +1,40 @@
+# ============================================================================
+# MULTI-STAGE DOCKER BUILD FOR GO BFF & MICROSERVICES ENGINE
+# Target: Minimal Scratch/Alpine Image (Zero CVEs, Lightweight, Fast Startup)
+# ============================================================================
+
+# Step 1: Build stage
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+
+# Install build essentials
+RUN apk add --no-cache git ca-certificates
+
+# Cache dependency layers
+COPY go.mod ./
+RUN go mod download || true
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+COPY proto/ ./proto/
+COPY schema/ ./schema/
+
+# Build static binary without CGO
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bff-server ./cmd/bff-server
+
+# Step 2: Minimal runtime image
+FROM alpine:3.19
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY --from=builder /app/bff-server /app/bff-server
+
+EXPOSE 8080
+
+USER 1001:1001
+
+CMD ["/app/bff-server"]
