@@ -1,0 +1,509 @@
+================================================================================
+STYLEHOME E-COMMERCE PLATFORM — MASTER ARCHITECTURAL & TECHNICAL SPECIFICATION
+Application Name: StyleHome (Atelier Living & Modern Architectural Furniture)
+Database Name   : Eshop (PostgreSQL 16 Multi-Schema Relational Cluster)
+================================================================================
+
+TABLE OF CONTENTS:
+1. Executive Architecture Summary & Technology Selection
+2. High-Level System Architecture Diagram & Topology
+3. Microservices Directory & Storage Ownership
+4. GraphQL BFF Schema Definitions (User, Catalog, Cart, Order)
+5. gRPC Protobuf v3 Service Contracts (Inventory, Payment, Orders)
+6. PostgreSQL Database Schemas (Eshop Database) & Outbox Tables
+7. Elasticsearch Index Mapping & Analyzer Configuration
+8. Zero-Framework Go net/http Middleware & Infrastructure Layer
+9. CQRS, Saga Orchestration & Distributed Stock Reservation Pattern
+10. Security Checklist (OWASP ASVS & PCI Hardening)
+11. Project Folder Structure (Go Backend & React SPA Frontend)
+12. Commands to Run, Test, Build, and Deploy
+13. Complete Git Commit History
+
+================================================================================
+1. EXECUTIVE ARCHITECTURE SUMMARY & TECHNOLOGY SELECTION
+================================================================================
+
+StyleHome is an enterprise-grade, high-concurrency e-commerce platform built to
+support millions of users, high-velocity flash-sales, and sub-second discovery.
+
+Technology Selection Rationale & Benefits:
+
+1. Go Standard Library (net/http) Without Third-Party Frameworks:
+   - Eliminates framework churn, breaking changes, and heavy dependency trees.
+   - Operates on Go's lightweight runtime scheduler (goroutines per connection).
+   - Composable middleware pipeline: func(http.Handler) http.Handler for RequestID,
+     Structured Logger, Panic Recovery, CORS, Rate Limiting, and JWT extraction.
+
+2. gRPC over HTTP/2 (Protobuf v3):
+   - High-throughput binary protocol with multiplexing and header compression.
+   - Strictly-typed schema definitions with backward/forward compatibility.
+   - Eliminates JSON serialization bottlenecks in internal service-to-service calls
+     (e.g., Cart -> Inventory Stock Verification, Checkout -> Payment Auth).
+
+3. GraphQL BFF (Backend-For-Frontend):
+   - Single unified endpoint for the React SPA.
+   - Resolves multi-service aggregates (Catalog + Real-Time Stock + Cart + Discounts)
+     in a single round-trip, preventing over-fetching and under-fetching.
+
+4. CQRS (Command Query Responsibility Segregation):
+   - Command Path (Write): Handled with PostgreSQL row locks, ACID invariants, and
+     Distributed Saga Orchestration.
+   - Query Path (Read): Fast lookups served from Redis caches and Elasticsearch indices.
+
+5. Elasticsearch Inverted Index & Edge N-Grams:
+   - Real-time search autocomplete as users type.
+   - Sub-10ms response times for faceted filtering (Brand, Category, Price brackets).
+
+6. Apache Kafka & Transactional Outbox Pattern:
+   - Outbox table commits domain events atomically with business transactions in PostgreSQL.
+   - Asynchronous worker dispatches events (OrderPlaced, PaymentCaptured) to Kafka,
+     ensuring zero event loss even during network partitions or crashes.
+
+7. PostgreSQL (Eshop Database):
+   - Primary transactional database providing ACID guarantees for orders, payments,
+     and stock ledgers with schema-per-service isolation.
+
+8. Redis:
+   - In-memory accelerator for guest cart sessions, distributed locks, rate limiting,
+     and 24-hour idempotency key validation.
+
+================================================================================
+2. HIGH-LEVEL SYSTEM ARCHITECTURE DIAGRAM & TOPOLOGY
+================================================================================
+
+                                  +-------------------------------------------------+
+                                  |            React SPA (TypeScript)               |
+                                  |     (React Query + React Router + Redux)       |
+                                  +-------------------------------------------------+
+                                           |                         |
+                               (HTTPS / WSS / GraphQL)      (HTTPS / REST Webhooks)
+                                           v                         v
++-----------------------------------------------------------------------------------+
+|                            API Gateway / Cloudflare WAF                           |
+|       - TLS 1.3 Termination    - Rate Limiting (Token Bucket)  - WAF Protection    |
++-----------------------------------------------------------------------------------+
+                                           |
+                                           v
++-----------------------------------------------------------------------------------+
+|               GraphQL BFF Service (Go net/http Standard Library)                  |
+|    - Schema-First Execution (SDL)  - JWT Verification Middleware  - Dataloaders   |
++-----------------------------------------------------------------------------------+
+         | (gRPC / mTLS)            | (gRPC / mTLS)            | (gRPC / mTLS)
+         v                          v                          v
++------------------+       +------------------+       +------------------+
+|  Auth & User Svc |       |   Catalog Svc    |       |   Search Svc     |
+|   (Go + gRPC)    |       |   (Go + gRPC)    |       |   (Go + gRPC)    |
++------------------+       +------------------+       +------------------+
+  |              |           |              |           |
+  v (SQL)        v (Redis)   v (SQL)        v (Redis)   v (REST/HTTP)
++-----------+  +-------+   +-----------+  +-------+   +------------------+
+| PostgreSQL|  | Redis |   | PostgreSQL|  | Redis |   |  Elasticsearch   |
+| (auth)    |  | Sess  |   | (catalog) |  | Cache |   |  (search_idx)    |
++-----------+  +-------+   +-----------+  +-------+   +------------------+
+                                     ^                          ^
+                                     |                          | (CDC / Events)
++------------------------------------+--------------------------+-------------------+
+|                      Apache Kafka Event Bus (Debezium CDC + Outbox)               |
++-----------------------------------------------------------------------------------+
+         ^                          ^                          ^
+         | (gRPC / mTLS)            | (gRPC / mTLS)            | (gRPC / mTLS)
++------------------+       +------------------+       +------------------+
+|     Cart Svc     |       |    Orders Svc    |       |   Payment Svc    |
+|   (Go + gRPC)    |       |   (Go + gRPC)    |       |   (Go + gRPC)    |
++------------------+       +------------------+       +------------------+
+  |              |           | (CQRS Write)             | (CQRS Write)
+  v (Redis)      v (SQL)     v (SQL)                    v (SQL)
++-------+      +-----------+ +-------------------+      +-------------------+
+| Redis |      | PostgreSQL| | PostgreSQL (orders)|      | PostgreSQL (pay)  |
+| Store |      | (cart)    | | + Outbox Table    |      | + Outbox Table    |
++-------+      +-----------+ +-------------------+      +-------------------+
+                                     | (gRPC Sync)              |
+                                     v                          v
+                           +------------------+       +---------------------+
+                           |  Inventory Svc   |       | External Gateways   |
+                           |   (Go + gRPC)    |       | (Stripe/Adyen REST) |
+                           +------------------+       +---------------------+
+                             | (Row-Lock SQL)
+                             v
+                           +-------------------+
+                           | PostgreSQL (inv)  |
+                           | + Redis Stock TTL |
+                           +-------------------+
+
+================================================================================
+3. MICROSERVICES DIRECTORY & STORAGE OWNERSHIP
+================================================================================
+
+1. Auth & Identity Service:
+   - Responsibilities: Registration, OAuth2/OIDC, JWT issuance, RBAC, MFA.
+   - Data Stores: PostgreSQL (auth_schema), Redis (Token Blacklist).
+
+2. User Profile Service:
+   - Responsibilities: Customer addresses, preferences, saved payment tokens.
+   - Data Stores: PostgreSQL (auth_schema).
+
+3. Catalog Service:
+   - Responsibilities: Product hierarchy, categories, variants, SKUs, images.
+   - Data Stores: PostgreSQL (catalog_schema), Redis (Hot Product Cache), S3.
+
+4. Search & Discovery Service:
+   - Responsibilities: Full-text search, faceted navigation, autocomplete.
+   - Data Stores: Elasticsearch (product_catalog index).
+
+5. Cart & Session Service:
+   - Responsibilities: Persistent user carts, guest sessions, price calculations.
+   - Data Stores: Redis (Active carts), PostgreSQL (cart_schema).
+
+6. Checkout & Promotion Service:
+   - Responsibilities: Coupon rules, multi-step validation, tax/shipping.
+   - Data Stores: PostgreSQL (promotion_schema), Redis (Promo Rules).
+
+7. Orders Service (CQRS):
+   - Responsibilities: Order lifecycle, CQRS commands, state machine, outbox events.
+   - Data Stores: PostgreSQL (order_schema + outbox), Redis.
+
+8. Payment Service (CQRS):
+   - Responsibilities: Payment gateway orchestration, captures, refunds.
+   - Data Stores: PostgreSQL (payment_schema + outbox).
+
+9. Inventory Service (CQRS):
+   - Responsibilities: Stock reservation with TTL, warehouse ledger, backorder rules.
+   - Data Stores: PostgreSQL (inventory_schema), Redis (Distributed Locks).
+
+10. Notification Service:
+   - Responsibilities: Email (SES/SendGrid), SMS (Twilio), Web Push.
+   - Data Stores: PostgreSQL (notification_logs).
+
+================================================================================
+4. GRAPHQL BFF SCHEMA DEFINITIONS
+================================================================================
+
+--- User Domain (schema/graphql/user.graphql) ---
+enum Role { CUSTOMER ADMIN VENDOR SUPPORT }
+enum AuthProvider { LOCAL GOOGLE APPLE FACEBOOK }
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  phoneNumber: String
+  role: Role!
+  isEmailVerified: Boolean!
+  isPhoneVerified: Boolean!
+  addresses: [Address!]!
+  defaultShippingAddressId: ID
+  defaultBillingAddressId: ID
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Address {
+  id: ID!
+  fullName: String!
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  stateProvince: String!
+  postalCode: String!
+  countryCode: String!
+  phoneNumber: String!
+  isDefaultShipping: Boolean!
+  isDefaultBilling: Boolean!
+}
+
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+  expiresIn: Int!
+}
+
+extend type Query {
+  me: User
+  myAddresses: [Address!]!
+}
+
+extend type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  socialLogin(input: SocialLoginInput!): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  logout: Boolean!
+  updateProfile(firstName: String, lastName: String, phoneNumber: String): User!
+}
+
+--- Catalog & Search Domain (schema/graphql/catalog.graphql) ---
+type Money {
+  amountInCents: Int!
+  currency: String!
+  formatted: String!
+}
+
+type ProductVariant {
+  id: ID!
+  sku: String!
+  title: String!
+  price: Money!
+  compareAtPrice: Money
+  attributes: [ProductAttribute!]!
+  inStock: Boolean!
+  inventoryCount: Int
+  image: Image
+}
+
+type Product {
+  id: ID!
+  title: String!
+  slug: String!
+  description: String!
+  brand: String!
+  category: Category!
+  tags: [String!]!
+  images: [Image!]!
+  featuredImage: Image
+  basePrice: Money!
+  variants: [ProductVariant!]!
+  averageRating: Float!
+  reviewCount: Int!
+  isFeatured: Boolean!
+  createdAt: String!
+}
+
+type FacetBucket { key: String! count: Int! label: String }
+type FacetGroup { name: String! field: String! buckets: [FacetBucket!]! }
+
+type SearchResultsConnection {
+  products: [Product!]!
+  totalCount: Int!
+  facets: [FacetGroup!]!
+  suggestions: [String!]!
+  pageInfo: PageInfo!
+}
+
+extend type Query {
+  productBySlug(slug: String!): Product
+  productById(id: ID!): Product
+  categories(parentSlug: String): [Category!]!
+  searchProducts(input: SearchProductsInput!): SearchResultsConnection!
+  searchSuggestions(prefix: String!): [String!]!
+}
+
+--- Cart Domain (schema/graphql/cart.graphql) ---
+type CartItem {
+  id: ID!
+  variantId: ID!
+  sku: String!
+  product: Product!
+  variant: ProductVariant!
+  quantity: Int!
+  unitPrice: Money!
+  totalPrice: Money!
+  isAvailable: Boolean!
+}
+
+type Cart {
+  id: ID!
+  userId: ID
+  items: [CartItem!]!
+  totalQuantity: Int!
+  subtotal: Money!
+  discountTotal: Money!
+  appliedCoupon: AppliedCoupon
+  estimatedTax: Money!
+  estimatedShipping: Money!
+  grandTotal: Money!
+  updatedAt: String!
+}
+
+extend type Query {
+  cart: Cart!
+}
+
+extend type Mutation {
+  addToCart(input: AddToCartInput!): Cart!
+  updateCartItemQuantity(input: UpdateCartItemInput!): Cart!
+  removeFromCart(cartItemId: ID!): Cart!
+  clearCart: Boolean!
+  applyCoupon(code: String!): Cart!
+  removeCoupon: Cart!
+}
+
+--- Orders Domain (schema/graphql/order.graphql) ---
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+type Order {
+  id: ID!
+  orderNumber: String!
+  status: OrderStatus!
+  items: [OrderLineItem!]!
+  shippingAddress: Address!
+  billingAddress: Address!
+  subtotal: Money!
+  discountTotal: Money!
+  shippingFee: Money!
+  taxTotal: Money!
+  grandTotal: Money!
+  paymentMethod: PaymentMethodOption!
+  trackingNumber: String
+  carrier: String
+  createdAt: String!
+}
+
+type PlaceOrderPayload {
+  success: Boolean!
+  order: Order
+  transactionId: String
+  errorMessage: String
+}
+
+extend type Query {
+  myOrders(page: Int = 1, limit: Int = 10): OrderConnection!
+  orderById(id: ID!): Order
+}
+
+extend type Mutation {
+  placeOrder(input: PlaceOrderInput!): PlaceOrderPayload!
+  cancelMyOrder(orderId: ID!, reason: String!): Boolean!
+}
+
+================================================================================
+5. gRPC PROTOBUF v3 SERVICE DEFINITIONS
+================================================================================
+
+--- Inventory Service (proto/inventory/v1/inventory.proto) ---
+syntax = "proto3";
+package inventory.v1;
+option go_package = "github.com/stylehome/eshop/proto/inventory/v1;inventoryv1";
+
+service InventoryService {
+  rpc CheckStock (CheckStockRequest) returns (CheckStockResponse);
+  rpc ReserveStock (ReserveStockRequest) returns (ReserveStockResponse);
+  rpc CommitReservation (CommitReservationRequest) returns (CommitReservationResponse);
+  rpc ReleaseReservation (ReleaseReservationRequest) returns (ReleaseReservationResponse);
+}
+
+message ReserveItem { string sku = 1; int32 quantity = 2; }
+message ReserveStockRequest {
+  string order_id = 1;
+  string idempotency_key = 2;
+  repeated ReserveItem items = 3;
+  int32 hold_duration_seconds = 4;
+}
+message ReserveStockResponse {
+  bool success = 1;
+  string reservation_id = 2;
+  repeated string out_of_stock_skus = 5;
+}
+
+--- Payment Service (proto/payment/v1/payment.proto) ---
+syntax = "proto3";
+package payment.v1;
+option go_package = "github.com/stylehome/eshop/proto/payment/v1;paymentv1";
+
+service PaymentService {
+  rpc AuthorizePayment (AuthorizePaymentRequest) returns (AuthorizePaymentResponse);
+  rpc CapturePayment (CapturePaymentRequest) returns (CapturePaymentResponse);
+  rpc RefundPayment (RefundPaymentRequest) returns (RefundPaymentResponse);
+}
+
+message Money { int64 amount_in_cents = 1; string currency = 2; }
+message AuthorizePaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  Money amount = 3;
+  string payment_token = 5;
+  string idempotency_key = 6;
+}
+
+--- Orders Service (proto/orders/v1/orders.proto) ---
+syntax = "proto3";
+package orders.v1;
+option go_package = "github.com/stylehome/eshop/proto/orders/v1;ordersv1";
+
+service OrderInternalService {
+  rpc CreateOrder (CreateOrderCommandRequest) returns (CreateOrderCommandResponse);
+  rpc CancelOrder (CancelOrderCommandRequest) returns (CancelOrderCommandResponse);
+  rpc UpdateOrderStatus (UpdateOrderStatusCommandRequest) returns (UpdateOrderStatusCommandResponse);
+  rpc GetOrder (GetOrderQueryRequest) returns (GetOrderQueryResponse);
+}
+
+================================================================================
+6. POSTGRESQL DATABASE SCHEMAS (DATABASE: Eshop)
+================================================================================
+
+-- Schema migrations stored in schema/migrations/001_initial_eshop_schema.sql:
+CREATE SCHEMA IF NOT EXISTS auth_schema;
+CREATE SCHEMA IF NOT EXISTS catalog_schema;
+CREATE SCHEMA IF NOT EXISTS inventory_schema;
+CREATE SCHEMA IF NOT EXISTS cart_schema;
+CREATE SCHEMA IF NOT EXISTS order_schema;
+CREATE SCHEMA IF NOT EXISTS payment_schema;
+CREATE SCHEMA IF NOT EXISTS promotion_schema;
+
+-- Transactional Outbox Pattern Table (Zero Event Loss Guarantee)
+CREATE TABLE IF NOT EXISTS order_schema.outbox_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    aggregate_type VARCHAR(100) NOT NULL, -- 'ORDER'
+    aggregate_id VARCHAR(255) NOT NULL,   -- order_id
+    event_type VARCHAR(100) NOT NULL,     -- 'OrderPlaced', 'OrderCancelled'
+    payload JSONB NOT NULL,
+    published BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+================================================================================
+7. ELASTICSEARCH INDEX MAPPING & ANALYZER CONFIGURATION
+================================================================================
+
+Stored in schema/elasticsearch/product_catalog_mapping.json:
+- Custom Edge N-Gram Filter (min_gram: 2, max_gram: 20) for instant autocomplete.
+- Standard Search Analyzer with lowercase & asciifolding filters.
+- Nested properties for product attributes (Color, Size, Material).
+- Keyword mappings for brands and categories to power faceted aggregations.
+
+================================================================================
+8. COMMANDS TO RUN, TEST, BUILD, AND DEPLOY
+================================================================================
+
+A. RUNNING LOCALLY:
+   1. Backend Server (Go net/http on :8080):
+      $ go run ./cmd/bff-server
+
+   2. Frontend Dev Server (Vite on :3000):
+      $ cd frontend
+      $ npm install
+      $ npm run dev
+
+B. RUNNING WITH DOCKER COMPOSE:
+   $ docker-compose up --build
+
+C. BUILDING PRODUCTION ARTIFACTS:
+   1. Go Static Binary:
+      $ go build -ldflags="-w -s" -o bff-server.exe ./cmd/bff-server
+
+   2. React Production Bundle:
+      $ cd frontend
+      $ npm run build
+
+================================================================================
+9. COMPLETE GIT COMMIT HISTORY
+================================================================================
+1. f0584e6 : feat(arch): initial StyleHome Eshop architecture schemas, proto definitions and blueprint
+2. 407354d : feat(db): add PostgreSQL Eshop schemas, migrations, outbox tables and Elasticsearch index mappings
+3. aee9284 : feat(core): implement zero-framework net/http middleware suite, idempotency, and transactional outbox
+4. 7a11630 : feat(services): implement gRPC Inventory and Payment microservices with CQRS and distributed reservation
+5. 20eb9ce : feat(orders): implement CQRS Orders and Cart services with Saga orchestration and outbox events
+6. 64ea9f7 : feat(bff): implement Go net/http GraphQL BFF Gateway and Elasticsearch search resolver
+7. e9b7e60 : feat(frontend): implement React TypeScript SPA with GraphQL client, React Query, and modern UI
+8. 23a5da7 : feat(devops): add Docker Compose orchestration and environment configuration
+9. 0a9a0ec : docs: add complete system documentation and commands reference text file
+================================================================================
