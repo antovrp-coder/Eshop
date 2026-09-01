@@ -1,0 +1,184 @@
+================================================================================
+STYLEHOME E-COMMERCE PLATFORM (DATABASE: Eshop)
+COMPLETE SYSTEM SPECIFICATION, ARCHITECTURE, TECH STACK, AND COMMANDS
+================================================================================
+
+1. APPLICATION & DATABASE OVERVIEW
+--------------------------------------------------------------------------------
+Application Name : StyleHome (Atelier Living & Architectural Furniture)
+Database Name    : Eshop (PostgreSQL 16 Multi-Schema Cluster)
+Architecture     : Domain-Driven Design (DDD) + Event-Driven Microservices + CQRS
+Backend Engine   : Go 1.26 (Standard Library net/http + gRPC Protobuf, Zero Frameworks)
+Frontend Engine  : React 18 SPA (TypeScript + Vite + React Router + React Query)
+Search Engine    : Elasticsearch 8.x (BM25 Full-Text + Edge N-Gram Autocomplete + Facets)
+In-Memory Store  : Redis 7.x (Token-Bucket Rate Limiter, Live Carts, Idempotency Keys)
+Messaging Bus    : Apache Kafka + Schema Registry + Transactional Outbox Pattern
+
+================================================================================
+2. TECHNOLOGY STACK & ARCHITECTURAL BENEFITS
+================================================================================
+
+A. Go Standard Library (net/http) Without Frameworks:
+   - Eliminates third-party dependency deprecation and framework churn.
+   - Leverages Go's built-in HTTP server and lightweight goroutine-per-connection.
+   - Composable middleware pipeline: func(http.Handler) http.Handler for RequestID,
+     Structured Logger, Panic Recovery, CORS, Rate Limiting, and JWT extraction.
+
+B. gRPC / Protobuf v3:
+   - High-throughput binary protocol over HTTP/2 with multiplexing and header compression.
+   - Sub-millisecond synchronous communication for critical paths (Checkout -> Payment,
+     Cart -> Inventory Stock Checks).
+
+C. GraphQL BFF (Backend-For-Frontend):
+   - Schema-first design (SDL) aggregating Catalog, Real-Time Stock, Cart, and Orders.
+   - Eliminates over-fetching and under-fetching by resolving multi-service queries in
+     a single client roundtrip.
+
+D. CQRS (Command Query Responsibility Segregation):
+   - Command Path (Write): Handled with PostgreSQL row locks, ACID invariants, and
+     Distributed Saga Orchestration.
+   - Query Path (Read): Fast lookups served from Redis caches and Elasticsearch indices.
+
+E. Elasticsearch:
+   - Edge n-gram tokenizers for real-time search autocomplete.
+   - Dynamic faceted aggregations for brands, categories, and price ranges.
+
+F. Apache Kafka & Transactional Outbox:
+   - Outbox table commits domain events atomically with business transactions in PostgreSQL.
+   - Asynchronous worker dispatches events (OrderPlaced, PaymentCaptured) to Kafka,
+     ensuring zero event loss even during network partitions or crashes.
+
+================================================================================
+3. REPOSITORY STRUCTURE
+================================================================================
+
+Eshop/
+├── cmd/
+│   └── bff-server/                  # Main Go net/http Server Entrypoint
+│       └── main.go
+├── docs/
+│   └── ARCHITECTURE_BLUEPRINT.md    # Master Architecture Blueprint & Diagrams
+├── internal/
+│   ├── bff/
+│   │   └── graphql/                 # GraphQL Engine & Domain Resolvers
+│   │       └── handler.go
+│   ├── catalog/                     # Catalog Bounded Context
+│   │   ├── domain/catalog.go
+│   │   └── service/catalog_service.go
+│   ├── cart/                        # Cart & Promotions Bounded Context
+│   │   ├── domain/cart.go
+│   │   └── service/cart_service.go
+│   ├── inventory/                   # Inventory & Distributed Reservation
+│   │   ├── domain/inventory.go
+│   │   └── service/inventory_service.go
+│   ├── orders/                      # Orders CQRS & Saga Orchestrator
+│   │   ├── domain/order.go
+│   │   ├── application/saga.go
+│   │   └── service/order_service.go
+│   ├── payment/                     # Payment & Gateway Tokenization
+│   │   ├── domain/payment.go
+│   │   └── service/payment_service.go
+│   ├── search/                      # Elasticsearch Search & Autocomplete
+│   │   └── service/search_service.go
+│   └── pkg/                         # Shared Infrastructure
+│       ├── events/events.go         # Kafka Domain Event Schemas
+│       ├── idempotency/manager.go   # Idempotency Key Manager
+│       ├── middleware/middleware.go # net/http Middleware Suite
+│       └── outbox/publisher.go      # Transactional Outbox Worker
+├── proto/                           # Protobuf v3 gRPC Definitions
+│   ├── inventory/v1/inventory.proto
+│   ├── orders/v1/orders.proto
+│   └── payment/v1/payment.proto
+├── schema/
+│   ├── elasticsearch/               # Elasticsearch Analyzer & Mapping Settings
+│   │   └── product_catalog_mapping.json
+│   ├── graphql/                     # GraphQL SDL Schemas (User, Catalog, Cart, Order)
+│   │   ├── cart.graphql
+│   │   ├── catalog.graphql
+│   │   ├── order.graphql
+│   │   └── user.graphql
+│   └── migrations/                  # PostgreSQL Database Eshop Schemas
+│       └── 001_initial_eshop_schema.sql
+├── frontend/                        # React 18 TypeScript SPA
+│   ├── src/
+│   │   ├── app/App.tsx
+│   │   ├── components/
+│   │   │   ├── cart/CartDrawer.tsx
+│   │   │   └── layout/Navbar.tsx & Footer.tsx
+│   │   ├── features/
+│   │   │   ├── catalog/ProductGrid.tsx & ProductDetailPage.tsx
+│   │   │   ├── checkout/CheckoutPage.tsx
+│   │   │   ├── home/HomePage.tsx
+│   │   │   ├── orders/OrdersPage.tsx
+│   │   │   └── search/SearchBar.tsx & SearchPage.tsx
+│   │   ├── services/graphqlClient.ts
+│   │   ├── index.css
+│   │   └── main.tsx
+│   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── deploy/
+│   ├── Dockerfile.backend
+│   └── Dockerfile.frontend
+├── docker-compose.yml
+├── go.mod
+└── .gitignore
+
+================================================================================
+4. COMMANDS TO RUN, BUILD, TEST, AND DEPLOY
+================================================================================
+
+A. RUNNING LOCALLY (Native Mode):
+
+   1. Run Backend Server (Go net/http on :8080):
+      $ go run ./cmd/bff-server
+
+   2. Run Frontend Dev Server (Vite on :3000):
+      $ cd frontend
+      $ npm install
+      $ npm run dev
+
+   3. Endpoints available:
+      - React UI        : http://localhost:3000
+      - GraphQL BFF     : http://localhost:8080/graphql
+      - Health Probe    : http://localhost:8080/healthz
+      - Payment Webhook : http://localhost:8080/api/webhooks/payment
+
+B. RUNNING WITH DOCKER COMPOSE:
+
+   1. Start all services (Postgres Eshop DB, Elasticsearch, Redis, Kafka, Backend):
+      $ docker-compose up --build
+
+   2. Stop all services:
+      $ docker-compose down
+
+C. BUILDING PRODUCTION BINARIES:
+
+   1. Build Go Backend Binary:
+      $ go build -ldflags="-w -s" -o bff-server.exe ./cmd/bff-server
+
+   2. Build React Frontend Production Bundle:
+      $ cd frontend
+      $ npm run build
+
+D. RUNNING TESTS:
+
+   1. Run Go Unit & Integration Tests:
+      $ go test ./...
+
+   2. Run Static Analysis:
+      $ go vet ./...
+
+================================================================================
+5. GIT COMMIT HISTORY
+================================================================================
+1. f0584e6 : feat(arch): initial StyleHome Eshop architecture schemas, proto definitions and blueprint
+2. 407354d : feat(db): add PostgreSQL Eshop schemas, migrations, outbox tables and Elasticsearch index mappings
+3. aee9284 : feat(core): implement zero-framework net/http middleware suite, idempotency, and transactional outbox
+4. 7a11630 : feat(services): implement gRPC Inventory and Payment microservices with CQRS and distributed reservation
+5. 20eb9ce : feat(orders): implement CQRS Orders and Cart services with Saga orchestration and outbox events
+6. 64ea9f7 : feat(bff): implement Go net/http GraphQL BFF Gateway and Elasticsearch search resolver
+7. e9b7e60 : feat(frontend): implement React TypeScript SPA with GraphQL client, React Query, and modern UI
+8. 23a5da7 : feat(devops): add Docker Compose orchestration and environment configuration
+================================================================================
