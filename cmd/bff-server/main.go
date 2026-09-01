@@ -24,6 +24,7 @@ import (
 	ordersApplication "github.com/stylehome/eshop/internal/orders/application"
 	ordersService "github.com/stylehome/eshop/internal/orders/service"
 	paymentService "github.com/stylehome/eshop/internal/payment/service"
+	"github.com/stylehome/eshop/internal/pkg/database"
 	"github.com/stylehome/eshop/internal/pkg/idempotency"
 	"github.com/stylehome/eshop/internal/pkg/middleware"
 	"github.com/stylehome/eshop/internal/pkg/outbox"
@@ -36,7 +37,18 @@ func main() {
 	log.Println("  Architecture: Zero-Framework Go net/http + GraphQL BFF + gRPC + CQRS")
 	log.Println("================================================================")
 
-	// 1. Initialize Shared Infrastructure
+	// 1. Initialize Shared Infrastructure & Database Connection
+	dbCfg := database.DefaultConfig()
+	dbPool, err := database.Connect(ctx, dbCfg)
+	if err != nil {
+		log.Printf("[DATABASE INIT] %v", err)
+	}
+	defer func() {
+		if dbPool != nil && dbPool.DB != nil {
+			_ = dbPool.Close()
+		}
+	}()
+
 	idempMgr := idempotency.NewManager(24 * time.Hour)
 	memPub := outbox.NewMemoryPublisher()
 	outboxWorker := outbox.NewWorker(memPub)
