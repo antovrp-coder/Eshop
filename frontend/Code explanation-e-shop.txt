@@ -1,0 +1,569 @@
+📌 ==============================================================================
+   📘 REACT FUNDAMENTALS & HOOKS GUIDE (STYLEHOME E-SHOP)
+==============================================================================
+
+💡 NOTE ON FILE FORMATS:
+   Plain text (.txt) files do not support direct font coloring natively.
+   👉 We also created "Code explanation-e-shop.md" in this folder with
+      vibrant custom colors, badges, and syntax highlighting!
+
+==============================================================================
+📖 CHAPTER 1: main.tsx — COMPLETE ARCHITECTURAL BREAKDOWN
+==============================================================================
+Source: 📁 frontend/src/main.tsx (12 lines)
+
+MAPPING OF MAIN.TSX TO ALL 7 POINTS:
+  Line 1    : import React from 'react';                    --> Point 1
+  Line 2    : //COMPONETS,HOOKS,JSX                         --> Point 2
+  Line 3    : //Hooks = Functions that let functional...    --> Point 3
+  Line 4    : import ReactDOM from 'react-dom/client';      --> Point 4
+  Line 5    : import { App } from './app/App';              --> Point 5
+  Line 6    : import './index.css';                         --> Point 6
+  Lines 8-12: ReactDOM.createRoot(...).render(...)          --> Point 7
+
+==============================================================================
+🟡 POINT 1: WHAT DOES "import React from 'react';" MEAN?
+==============================================================================
+Location: 📁 frontend/src/main.tsx (Line 1)
+
+  import React from 'react';
+
+🔹 1. CORE COMPONENT ACCESS:
+   - Imports top-level APIs like <React.StrictMode>
+   - <React.StrictMode> activates checks and warnings for child components
+     in development mode without rendering any visible UI.
+
+🔹 2. HOOKS ACCESS:
+   - Allows calling React.useState, React.useEffect, React.useRef, etc.
+
+🔹 3. TYPESCRIPT TYPES:
+   - Gives access to React.FC (Functional Component), React.ReactNode,
+     React.CSSProperties, etc.
+
+🔹 4. MODERN JSX TRANSFORM:
+   - In React 17+, basic JSX syntax is automatically transformed.
+   - However, importing React is still required whenever referencing
+     the React namespace directly (such as <React.StrictMode>).
+
+
+==============================================================================
+🟢 SECTION 2: WHAT ARE HOOKS IN REACT?
+==============================================================================
+Hooks are special functions that allow you to "hook into" React state and
+component lifecycle features inside functional components without classes.
+
+✨ All hook names begin with the prefix "use".
+
+------------------------------------------------------------------------------
+⚡ THE ESSENTIAL HOOKS CHEAT SHEET:
+------------------------------------------------------------------------------
+
+🔸 1. useState
+   • Purpose : Creates local reactive state for your component.
+   • Behavior: Updating state triggers an immediate re-render with new data.
+   • Example (frontend/src/app/App.tsx):
+       const [cart, setCart] = useState<Cart | null>(null);
+       const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+
+🔸 2. useEffect
+   • Purpose : Handles asynchronous operations and side effects:
+               - Fetching API data
+               - Setting up event listeners or timers
+               - Direct DOM interactions
+   • Dependency Array Rules:
+       []         -> Runs ONCE when component mounts.
+       [cart]     -> Runs whenever the "cart" variable changes.
+       (none)     -> Runs on EVERY single re-render.
+   • Example (frontend/src/app/App.tsx):
+       useEffect(() => {
+         refreshCart();
+       }, []);
+
+🔸 3. useContext
+   • Purpose : Reads data from a React Context directly.
+   • Benefit : Avoids "prop drilling" (passing data through 5 levels of props).
+   • Example : Reading global theme, user auth token, or shopping cart.
+
+🔸 4. useRef
+   • Purpose : Holds a mutable value that stays constant across renders
+               WITHOUT triggering a re-render when changed.
+   • Also used to access DOM elements directly (e.g. inputRef.current.focus()).
+
+🔸 5. useMemo
+   • Purpose : Performance optimization. Caches the result of an expensive
+               calculation between re-renders until dependencies change.
+
+🔸 6. useCallback
+   • Purpose : Performance optimization. Caches a function definition
+               between re-renders to prevent unnecessary child re-renders.
+
+
+==============================================================================
+🔴 SECTION 3: THE 2 GOLDEN RULES OF HOOKS
+==============================================================================
+
+  ⛔ RULE #1: ONLY CALL HOOKS AT THE TOP LEVEL
+     • Never call hooks inside loops (for, while), conditional checks (if/else),
+       or nested callback functions.
+     • Always declare them at the very top of your React component.
+
+  ⛔ RULE #2: ONLY CALL HOOKS FROM REACT FUNCTIONS
+     • Call hooks from React functional components.
+     • Call hooks from custom hooks (functions starting with 'use...').
+     • NEVER call hooks inside standard vanilla JavaScript helper functions.
+
+
+==============================================================================
+🔵 SECTION 4: WHAT DOES "import ReactDOM from 'react-dom/client';" MEAN?
+==============================================================================
+Location: 📁 frontend/src/main.tsx (Line 4)
+
+  import ReactDOM from 'react-dom/client';
+
+  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+
+🔹 1. THE ARCHITECT vs. THE BUILDER:
+   - React is the ARCHITECT: It creates virtual components (<App />), manages
+     state, and creates the Virtual DOM blueprint. It does NOT know how to
+     paint real pixels onto a web browser.
+   - ReactDOM is the BUILDER: It takes the virtual blueprint and translates
+     it into real HTML DOM nodes (<div>, <h1>, <button>) inside the browser.
+
+🔹 2. WHY '/client'?
+   - React 18 introduced modern Concurrent rendering and separated client
+     browser rendering ('react-dom/client') from server-side rendering
+     ('react-dom/server').
+
+🔹 3. WHAT DOES createRoot() DO?
+   - document.getElementById('root'): Finds <div id="root"></div> in index.html.
+   - ReactDOM.createRoot(): Designates that container as the React 18 root.
+   - .render(<App />): Physically mounts and paints the React application.
+
+
+==============================================================================
+🟣 SECTION 5: WHAT DOES "import { App } from './app/App';" MEAN?
+==============================================================================
+Location: 📁 frontend/src/main.tsx (Line 5)
+
+  import { App } from './app/App';
+
+📖 THE STORY OF THE GATEKEEPER & THE MASTER CASTLE:
+   - The City Gatekeeper (main.tsx):
+     Stands guard at the front entrance (<div id="root">). He has the
+     construction tools (ReactDOM), but he doesn't know how to build a castle!
+   - The Master Castle (App.tsx):
+     A self-contained masterpiece built by master artisans in './app/App'.
+     Inside the castle sits the Watchtower (<Navbar />), the Grand Halls
+     (<HomePage />, <SearchPage />), and the Treasure Vault (<CartDrawer />).
+   - The Delivery Order (import { App } from './app/App';):
+     The Gatekeeper calls the atelier: "Send over the Master Castle (App)!"
+   - The Grand Opening (.render(<App />)):
+     The Gatekeeper plants the Castle right onto the foundation (#root).
+     Boom! The entire kingdom opens up for visitors in their web browser!
+
+🔹 TECHNICAL BREAKDOWN:
+   1. Named Import { App }:
+      In App.tsx, the component is defined as:
+        export const App: React.FC = () => { ... }
+      Because it is a NAMED export, we must import it with curly braces { App }.
+   2. Path './app/App':
+      ./ = Start in current folder (src/)
+      app/ = Open the app folder
+      App = The App.tsx file (Vite automatically resolves the .tsx extension).
+   3. Why Not Put All Code in main.tsx?
+      Clean Architecture! main.tsx is just the ignition key. App.tsx is the
+      entire engine, navigation router, and layout coordinator.
+
+
+==============================================================================
+🎨 SECTION 6: WHAT DOES "import './index.css';" MEAN?
+==============================================================================
+Location: 📁 frontend/src/main.tsx (Line 6)
+
+  import './index.css';
+
+👔 THE STORY OF THE ROYAL TAILOR & THE NAKED CASTLE:
+   - When the Castle (<App />) is assembled, it begins completely naked:
+     plain black text on white background, raw blue links, and unstyled buttons.
+   - Calling the Royal Tailor (import './index.css';):
+     The Gatekeeper orders the master stylesheet. The tailor arrives with
+     rich obsidian velvet (--bg-primary: #0d0f12), gilded gold embroidery
+     (--accent-gold: #e2b170), and luxury typography (Plus Jakarta Sans).
+   - Side-Effect Draping:
+     Notice there is no variable name or 'from'. This is a SIDE-EFFECT IMPORT.
+     It tells the Vite bundler to inject the stylesheet into the document <head>
+     so every single component wears the luxury dark theme automatically!
+
+🔹 TECHNICAL BREAKDOWN:
+   1. Side-Effect Import:
+      Executes the CSS file immediately without exposing JavaScript variables.
+   2. Design Tokens in :root:
+      Defines global CSS variables (--bg-primary, --accent-gold, --radius-md)
+      used throughout the entire e-commerce app.
+   3. Global Reset:
+      Zeroes out browser margins, enables box-sizing: border-box, and ensures
+      consistent cross-browser rendering across Chrome, Safari, and Firefox.
+
+
+==============================================================================
+🚀 SECTION 7: WHAT DOES "createRoot(...).render(...)" MEAN?
+==============================================================================
+Location: 📁 frontend/src/main.tsx (Lines 8-12)
+
+  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+
+⚡ THE STORY OF THE FOUNDATION, SAFETY INSPECTOR & POWER SWITCH:
+   1. Finding the Land (document.getElementById('root')):
+      Searches index.html to find the single empty div: <div id="root"></div>.
+   2. The Deed Guarantee (as HTMLElement):
+      TypeScript worries: "What if this element doesn't exist and returns null?"
+      By writing 'as HTMLElement', you sign a guarantee that the element exists.
+   3. Pouring Concrete (ReactDOM.createRoot(...)):
+      Hands the container over to React 18, setting up the Concurrent Engine,
+      Fiber state tree, and scheduling queue.
+   4. The Safety Inspector (<React.StrictMode>):
+      A development watchdog that inspects the building before opening.
+      It double-runs effects and component lifecycles in dev mode to detect
+      memory leaks, obsolete methods, and unhandled side effects.
+   5. Flipping the Master Switch (.render(<App />)):
+      Ignites the entire application, mounting the Master Castle (<App />)
+      and streaming real reactive HTML elements to the user's screen!
+
+🔹 3 KEY TAKEAWAYS:
+   1. React 18 Concurrent Mode: createRoot replaces the old legacy
+      ReactDOM.render(), enabling smoother transitions and batched updates.
+   2. StrictMode Console Logs: If console.log prints twice in dev mode,
+      StrictMode is verifying your cleanup logic. It only runs once in production.
+   3. Total Ignition: Without this 5-line block, all your React code remains
+      just dormant JavaScript in memory without painting anything to the DOM.
+
+==============================================================================
+📖 CHAPTER 2: App.tsx — MASTER APPLICATION COMPONENT BREAKDOWN
+==============================================================================
+Source: 📁 frontend/src/app/App.tsx (86 lines)
+
+MAPPING OF APP.TSX TO ALL 9 POINTS:
+  Line 1    : import React, { useState, useEffect } from 'react';     --> Point 2.1
+  Line 2    : import { BrowserRouter, Routes, Route } from '...';      --> Point 2.2
+  Lines 3-10: import { Navbar, Footer, CartDrawer, HomePage... }       --> Point 2.3
+  Line 11   : import { api, Cart } from '../services/graphqlClient';   --> Point 2.4
+  Line 13   : export const App: React.FC = () => {                     --> Point 2.5
+  Lines 14-15: const [cart, setCart] = useState... [isCartOpen...]     --> Point 2.6
+  Lines 17-28: const refreshCart = async () => ... useEffect(...);     --> Point 2.7
+  Lines 30-56: const handleAddToCart, handleUpdateQuantity, coupon     --> Point 2.8
+  Lines 58-85: return (<BrowserRouter><Navbar /><Routes>...</Routes>)  --> Point 2.9
+
+
+==============================================================================
+🟡 POINT 2.1: LINE 1 — THE THREE SORCERERS OF REACT
+==============================================================================
+Code:
+  import React, { useState, useEffect } from 'react';
+
+📖 THE STORY OF THE THREE SORCERERS:
+  When assembling the royal palace of your app, one wizard is never enough.
+  You summon three distinct sorcerers from the Realm of React:
+  1. React (The Master Enchanter): Casts the fundamental enchantment that turns
+     plain JavaScript functions into breathing, interactive visual components.
+  2. useState (The Memory Keeper): An alchemist with an enchanted notebook.
+     Ordinary JavaScript variables vanish into thin air as soon as a function
+     finishes executing. The Memory Keeper writes values down in a magic book
+     so your shopping cart and toggles survive across thousands of re-renders!
+  3. useEffect (The Time Traveler): Sits in the watchtower. It waits for
+     specific moments in time—like the exact second the shop doors swing open
+     for the very first customer—to trigger background duties and server sync.
+
+🔹 DEFINITION:
+  Combines default library import ('React') with named Hook imports
+  ('{ useState, useEffect }') from the official React package.
+
+💡 PRACTICAL EXAMPLE:
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    console.log("Component appeared on screen!");
+  }, []);
+
+
+==============================================================================
+🔵 POINT 2.2: LINE 2 — THE GRAND RAILWAY & SWITCH TRACKS
+==============================================================================
+Code:
+  import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+📖 THE STORY OF THE GRAND RAILWAY:
+  In ancient websites (1990s), whenever a customer clicked a link to view a
+  product, the entire page collapsed, the browser screen flashed blank white,
+  and the entire castle had to be rebuilt from scratch over the network.
+  react-router-dom brings the high-speed bullet railway system:
+  1. BrowserRouter (The Grand Railway Station): Controls the browser's URL bar
+     and history stack without ever refreshing or blinking the screen.
+  2. Routes (The Master Switch Operator): Looks at the incoming passenger's ticket
+     (the URL) and switches the track to the correct destination platform.
+  3. Route (The Destination Platform): Defines where the train stops:
+     - URL "/"           --> Platform: HomePage
+     - URL "/search"     --> Platform: SearchPage
+     - URL "/checkout"   --> Platform: CheckoutPage
+
+🔹 DEFINITION:
+  Client-Side Routing library for Single Page Applications (SPAs). It intercepts
+  URL changes and instantly swaps components in memory with 0ms page reloads.
+
+💡 PRACTICAL EXAMPLE:
+  <Routes>
+    <Route path="/about" element={<AboutPage />} />
+  </Routes>
+
+
+==============================================================================
+🟣 POINT 2.3: LINES 3–10 — THE 8 WINGS OF THE DEPARTMENT STORE
+==============================================================================
+Code:
+  import { Navbar } from '../components/layout/Navbar';
+  import { Footer } from '../components/layout/Footer';
+  import { CartDrawer } from '../components/cart/CartDrawer';
+  import { HomePage } from '../features/home/HomePage';
+  import { SearchPage } from '../features/search/SearchPage';
+  import { ProductDetailPage } from '../features/catalog/ProductDetailPage';
+  import { CheckoutPage } from '../features/checkout/CheckoutPage';
+  import { OrdersPage } from '../features/orders/OrdersPage';
+
+📖 THE STORY OF THE 8 DEPARTMENT STORE WINGS:
+  Imagine a luxury department store divided into permanent architecture
+  and dynamic exhibition halls:
+  - Permanent Architecture:
+    * The Roof & Entrance (Navbar): Always overhead, showing the brand logo,
+      navigation links, and the live shopping basket item count badge.
+    * The Foundation Ground Floor (Footer): Sits at the bottom of every hall,
+      showing trust badges, policies, and company info.
+    * The Secret Valet Door (CartDrawer): Stays hidden in the right wall,
+      sliding into view whenever you pick up an item to purchase.
+  - The 5 Themed Shopping Halls:
+    * HomePage: The sparkling atrium with trending banners and hero products.
+    * SearchPage: The library aisle with instant keyword filtering & facets.
+    * ProductDetailPage: The artisan's desk showing 4K images, sizing, & specs.
+    * CheckoutPage: The secure cashier desk for payment and address entry.
+    * OrdersPage: The customer receipt bureau showing tracking & order history.
+
+🔹 DEFINITION:
+  Feature-Based Modular Architecture. Separates reusable UI shell primitives
+  ('../components/layout/...') from domain business modules ('../features/...').
+
+
+==============================================================================
+🟢 POINT 2.4: LINE 11 — THE DIPLOMATIC COURIER TO THE GRAPHQL EMBASSY
+==============================================================================
+Code:
+  import { api, Cart } from '../services/graphqlClient';
+
+📖 THE STORY OF THE DIPLOMATIC COURIER:
+  The React frontend lives on the customer's browser, but the true wealth
+  (databases, inventory, payment processing) resides in the Go backend
+  microservices fortress running on port 8080:
+  1. api (The Diplomatic Courier): A trusted envoy holding diplomatic passports.
+     When you need the cart or product data, you call 'api.getCart()'.
+     The courier bundles your request into a GraphQL query, flies to the Go
+     server, and delivers the exact JSON payload back.
+  2. Cart (The Royal Treaty & Blueprint): A TypeScript interface defining the
+     exact shape of a Cart object:
+     { id: string, items: CartItem[], total: number, discountTotal: number }
+     If a developer tries to access 'cart.nonExistentField', TypeScript immediately
+     rings the alarm before your app ever reaches production!
+
+🔹 DEFINITION:
+  BFF (Backend-For-Frontend) typed client that encapsulates network queries
+  and mutations using strictly-typed TypeScript contracts.
+
+
+==============================================================================
+🟡 POINT 2.5: LINE 13 — THE CORONATION OF THE MOTHER SHIP
+==============================================================================
+Code:
+  export const App: React.FC = () => {
+
+📖 THE STORY OF THE CORONATION:
+  This line crowns the component as the Sovereign Ruler of the entire UI tree:
+  - export: Proclaims to the world that this component is public, allowing
+    'main.tsx' to import and mount it into the DOM.
+  - const App: Declares an immutable reference to the mother ship function.
+  - : React.FC: Awards the royal title ("Functional Component" type in TypeScript).
+    It guarantees that this function adheres to React's rules and returns JSX.
+  - () => {: The modern ES6 arrow function syntax that houses all the state,
+    side effects, handlers, and the master visual layout.
+
+🔹 DEFINITION:
+  Declares the top-level Functional Component in TypeScript with explicit typing.
+
+
+==============================================================================
+🔵 POINT 2.6: LINES 14–15 — THE STATE VAULTS & POCKET DOOR
+==============================================================================
+Code:
+  const [cart, setCart] = useState<Cart | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+
+📖 THE STORY OF THE TWO VAULTS:
+  The master component maintains two high-security vaults in its memory:
+  1. Vault 1 (cart, setCart):
+     - The Value: Holds the entire active shopping cart (items, prices, discounts).
+       It begins as 'null' while the diplomatic courier is fetching initial data.
+     - The Key (setCart): Only this function has the authority to update the cart.
+       Whenever setCart(newCart) is called, React automatically re-paints every
+       badge, drawer, and price tag across the whole store!
+  2. Vault 2 (isCartOpen, setIsCartOpen):
+     - A simple binary magic switch: true (Drawer open) or false (Drawer hidden).
+     - When a customer clicks "Add to Cart" or the cart icon in the Navbar,
+       setIsCartOpen(true) flips the switch and slides the drawer into view.
+
+🔹 DEFINITION:
+  React useState Hook with TypeScript generics ('<Cart | null>' and '<boolean>').
+  Controls persistent reactive state that triggers UI re-renders upon mutation.
+
+
+==============================================================================
+🟢 POINT 2.7: LINES 17–28 — THE MORNING BELL & LEDGER SYNCHRONIZATION
+==============================================================================
+Code:
+  const refreshCart = async () => {
+    try {
+      const c = await api.getCart();
+      setCart(c);
+    } catch (err) {
+      console.error('Failed to sync cart:', err);
+    }
+  };
+
+  useEffect(() => {
+    refreshCart();
+  }, []);
+
+📖 THE STORY OF THE MORNING BELL:
+  When a shopper walks through the store entrance, they might already have
+  reserved items from a previous visit stored in server session cookies.
+  1. refreshCart(): The store clerk immediately sends the diplomatic courier
+     (await api.getCart()) to check the ledger in the Go backend.
+     When the courier returns, setCart(c) fills the local cart vault.
+     If the server is unreachable, the 'catch' block gracefully logs the error
+     without crashing the customer's browser.
+  2. useEffect(..., []): The empty array '[]' is the Golden Rule of the Morning Bell!
+     It commands React: "Ring this bell and fetch the cart exactly ONCE when the
+     store first opens (component mounts). Do NOT ring it again on normal re-renders!"
+
+🔹 DEFINITION:
+  Mount lifecycle side-effect in React. An empty dependency array '[]' guarantees
+  the asynchronous data-fetching function executes only once after initial render.
+
+
+==============================================================================
+🔴 POINT 2.8: LINES 30–56 — THE THREE TRUSTED STORE CLERKS
+==============================================================================
+Code:
+  // Clerk 1: Add item and pop open the cart drawer
+  const handleAddToCart = async (variantId: string, quantity: number = 1) => {
+    const updated = await api.addToCart(variantId, quantity);
+    setCart(updated);
+    setIsCartOpen(true);
+  };
+
+  // Clerk 2: Update item quantity (+ / - / delete)
+  const handleUpdateQuantity = async (cartItemId: string, quantity: number) => {
+    const updated = await api.updateCartItem(cartItemId, quantity);
+    setCart(updated);
+  };
+
+  // Clerk 3: Validate and apply promotional coupons
+  const handleApplyCoupon = async (code: string) => {
+    try {
+      const updated = await api.applyCoupon(code);
+      setCart(updated);
+    } catch (err: any) {
+      alert(err.message || 'Invalid coupon');
+    }
+  };
+
+📖 THE STORY OF THE THREE CLERKS:
+  Whenever a customer interacts with products, three specialized clerks handle it:
+  1. Clerk 1 (handleAddToCart): Takes the item ID and desired quantity, calls
+     the Go backend, updates the cart vault (setCart), and immediately slides
+     the cart drawer open (setIsCartOpen(true)) so the customer gets instant,
+     satisfying visual feedback that their item was safely captured!
+  2. Clerk 2 (handleUpdateQuantity): Manages the quantity selector inside the drawer.
+     Whether the customer clicks '+' to buy another or sets quantity to 0 to remove it,
+     this clerk synchronizes the new counts with the server and updates state.
+  3. Clerk 3 (handleApplyCoupon): Takes promo discount codes (like 'SUMMER20').
+     It attempts to apply the code against backend discount rules.
+     If valid, the new discounted total is saved; if invalid or expired, it intercepts
+     the error safely and shows an alert dialog ('Invalid coupon').
+
+🔹 DEFINITION:
+  Higher-order asynchronous business logic handlers passed down via props
+  to child components to trigger centralized state mutations.
+
+
+==============================================================================
+🟣 POINT 2.9: LINES 58–85 — THE GLASS SKYSCRAPER SKELETON (LAYOUT & ROUTES)
+==============================================================================
+Code:
+  return (
+    <BrowserRouter>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Navbar cart={cart} onOpenCart={() => setIsCartOpen(true)} />
+
+        <main style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<HomePage onAddToCart={handleAddToCart} />} />
+            <Route path="/search" element={<SearchPage onAddToCart={handleAddToCart} />} />
+            <Route path="/product/:slug" element={<ProductDetailPage onAddToCart={handleAddToCart} />} />
+            <Route path="/checkout" element={<CheckoutPage cart={cart} onOrderSuccess={refreshCart} />} />
+            <Route path="/orders" element={<OrdersPage />} />
+          </Routes>
+        </main>
+
+        <Footer />
+
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cart={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onApplyCoupon={handleApplyCoupon}
+        />
+      </div>
+    </BrowserRouter>
+  );
+
+📖 THE STORY OF THE GLASS SKYSCRAPER:
+  Look at how the JSX blueprint creates an unbreakable, responsive architecture:
+  1. The Outer Shell (<div style={{ minHeight: '100vh', display: 'flex' }}>):
+     Guarantees the application always stretches to 100% of the viewport height.
+  2. The Roof Canopy (<Navbar />):
+     Stays fixed at the top, receiving the live 'cart' to show badge numbers and
+     the callback 'onOpenCart' to pop open the drawer.
+  3. The Expanding Atrium (<main style={{ flex: 1 }}>):
+     Takes up all remaining vertical space. Even if a page has only one sentence,
+     the <Footer /> is firmly pushed down to the very bottom of the screen!
+  4. The Railway Switches (<Routes> & <Route>):
+     Swaps out the visible pavilion according to the browser's URL path:
+     - "/"             --> <HomePage />
+     - "/search"       --> <SearchPage />
+     - "/product/:slug"--> <ProductDetailPage /> (Dynamic URL parameter ':slug'!)
+     - "/checkout"     --> <CheckoutPage /> (Refreshes cart on order completion)
+     - "/orders"       --> <OrdersPage />
+  5. The Slide-over Valet (<CartDrawer />):
+     Mounted globally at the root level. When 'isOpen' is true, it glides over
+     any active page smoothly without interrupting the customer's navigation!
+
+🔹 DEFINITION:
+  Declarative JSX Layout Composition combining CSS Flexbox Sticky Footer pattern,
+  Dynamic Route matching with parameter tokens, and Uncontrolled Slide-over Modals.
+
+==============================================================================
+🏁 End of Guide · StyleHome Architecture
+==============================================================================

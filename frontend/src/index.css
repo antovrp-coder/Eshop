@@ -7,7 +7,7 @@
   --bg-surface: #14171d;
   --bg-surface-elevated: #1c212a;
   --bg-surface-hover: #242b36;
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.2);
 
   --text-primary: #f8fafc;
@@ -17,10 +17,10 @@
   --accent-gold: #e2b170;
   --accent-gold-hover: #f0c588;
   --accent-gold-glow: rgba(226, 177, 112, 0.25);
-  
+
   --accent-emerald: #10b981;
   --accent-rose: #f43f5e;
-  
+
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 18px;
@@ -62,7 +62,9 @@ button {
   background: none;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: inherit;
   color: inherit;
 }
@@ -71,13 +73,16 @@ input, select, textarea {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--bg-surface-elevated);
   border-radius: var(--radius-full);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
@@ -115,11 +120,13 @@ input, select, textarea {
   gap: 0.5rem;
   box-shadow: 0 4px 14px rgba(226, 177, 112, 0.25);
 }
+
 .btn-primary:hover {
   background: linear-gradient(135deg, #f0c588 0%, #d89f59 100%);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(226, 177, 112, 0.4);
 }
+
 .btn-primary:active {
   transform: translateY(0);
 }
@@ -137,6 +144,7 @@ input, select, textarea {
   justify-content: center;
   gap: 0.5rem;
 }
+
 .btn-secondary:hover {
   background: var(--bg-surface-hover);
   border-color: var(--border-hover);
@@ -153,11 +161,13 @@ input, select, textarea {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+
 .badge-gold {
   background: rgba(226, 177, 112, 0.15);
   color: var(--accent-gold);
   border: 1px solid rgba(226, 177, 112, 0.3);
 }
+
 .badge-emerald {
   background: rgba(16, 185, 129, 0.15);
   color: var(--accent-emerald);
@@ -166,8 +176,15 @@ input, select, textarea {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {

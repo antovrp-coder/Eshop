@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StyleHome Platform — 5-Minute Technical Presentation & Video Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --accent-warm: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+    }
+
+    header {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent), #4338ca);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      color: white;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #4f46e5;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .btn-record {
+      background: #ef4444;
+      color: white;
+      animation: pulseRecord 2s infinite;
+    }
+    .btn-record:hover {
+      background: #dc2626;
+    }
+
+    .btn-record.recording {
+      background: #b91c1c;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+
+    @keyframes pulseRecord {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border-color: var(--card-border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Presentation Screen Viewport */
+    .viewport-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .screen-frame {
+      width: 100%;
+      max-width: 1120px;
+      aspect-ratio: 16 / 9;
+      background: #0d131f;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 50%);
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .slide-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.3rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .slide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      max-width: 820px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p, .card li {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .card ul {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card li::before {
+      content: "▹";
+      color: var(--accent);
+      margin-right: 8px;
+      font-weight: bold;
+    }
+
+    .code-box {
+      background: #06090e;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.76rem;
+      color: #38bdf8;
+      line-height: 1.45;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    /* Subtitles / Teleprompter */
+    .teleprompter-box {
+      width: 100%;
+      max-width: 1120px;
+      margin-top: 16px;
+      background: rgba(18, 24, 38, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .teleprompter-speaker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent-warm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .teleprompter-text {
+      font-size: 1rem;
+      color: #f1f5f9;
+      line-height: 1.45;
+      flex: 1;
+      font-weight: 500;
+    }
+
+    /* Controller Bar */
+    .player-controls {
+      width: 100%;
+      max-width: 1120px;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-cyan));
+      border-radius: 3px;
+      transition: width 0.2s linear;
+    }
+
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .time-display {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .slide-tab {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .slide-tab.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Recording Overlay Notice */
+    .recording-notice {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #182234;
+      border: 1px solid #38bdf8;
+      border-radius: 10px;
+      padding: 14px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 100;
+      max-width: 360px;
+    }
+
+    .recording-notice h4 {
+      color: #38bdf8;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .recording-notice p {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.1);
+      margin-right: 4px;
+    }
+    .tag-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .tag-blue { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .tag-purple { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .tag-orange { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER NAVIGATION -->
+  <header>
+    <div class="brand">
+      <div class="logo-badge">SH</div>
+      <div>
+        <h1>StyleHome Platform (Database: Eshop)</h1>
+        <span>5-Minute Technical Walkthrough & Video Presentation</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="recordBtn" class="btn btn-record" onclick="toggleRecording()">
+        <span id="recordIcon">⏺</span> <span id="recordText">Record Video File</span>
+      </button>
+      <button id="speechToggleBtn" class="btn btn-secondary" onclick="toggleSpeech()">
+        <span id="speechIcon">🔊</span> Narration Voice: <strong id="speechStateText" style="margin-left:4px">ON</strong>
+      </button>
+      <button class="btn btn-secondary" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+    </div>
+  </header>
+
+  <!-- PRESENTATION MAIN VIEWPORT -->
+  <div class="viewport-container">
+    <div class="screen-frame" id="presentationFrame">
+
+      <!-- SLIDE 1 (0:00 - 1:00) -->
+      <div class="slide active" id="slide-0">
+        <div>
+          <span class="slide-badge">Minute 0:00 – 1:00 • High-Level Architecture</span>
+          <h2 class="slide-title">StyleHome E-Commerce Platform</h2>
+          <p class="slide-subtitle">Enterprise-Scale, Cloud-Native Architecture with Pure Go, CQRS, and Domain-Driven Design.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>🏢 System Top-Level Architecture</h3>
+            <ul>
+              <li><strong>Frontend:</strong> React 18 SPA (TypeScript + React Query + Vite)</li>
+              <li><strong>Ingress:</strong> Zero-Framework Go <code>net/http</code> GraphQL BFF Gateway</li>
+              <li><strong>Service Mesh:</strong> Internal microservices connected over <strong>mTLS gRPC</strong></li>
+              <li><strong>Primary DB:</strong> PostgreSQL cluster (<code>Eshop</code>) with schema isolation</li>
+              <li><strong>Event Streaming:</strong> Apache Kafka with <strong>Transactional Outbox</strong></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🎯 Why Domain-Driven CQRS?</h3>
+            <p style="margin-bottom: 12px;">Separates write-heavy business invariants from low-latency global discovery reads:</p>
+            <div class="code-box">
+[React SPA] ➔ (GraphQL BFF on :8080)
+    │
+    ├── Write Commands (CQRS) ➔ PostgreSQL (Eshop) [ACID]
+    │      └─ Outbox Table ➔ Kafka Broker
+    │
+    └── Query Reads (CQRS) ➔ Elasticsearch 8 & Redis 7
+            </div>
+            <div style="margin-top: 10px; display: flex; gap: 6px;">
+              <span class="tag tag-green">Zero Monolith Chokepoints</span>
+              <span class="tag tag-blue">Independent Scaling</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+          <span>Database: <strong>Eshop</strong> • Runtime: Go 1.26</span>
+          <span>Slide 1 of 5</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 (1:00 - 2:00) -->
+      <div class="slide" id="slide-1">
+        <div>
+          <span class="slide-badge">Minute 1:00 – 2:00 • Technology Stack</span>
+          <h2 class="slide-title">Technology Selection & Rationale</h2>
+          <p class="slide-subtitle">Engineered for maximal concurrency, sub-millisecond RPCs, and zero framework churn.</p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3>⚡ Pure Go net/http (Zero Frameworks)</h3>
+            <ul>
+              <li>Eliminates 3rd-party framework breaking changes and dependency vulnerabilities.</li>
+              <li>Lightweight goroutine-per-connection runtime (~2KB RAM stack).</li>
+              <li>Composable middleware chaining: <code>func(http.Handler) http.Handler</code>.</li>
+            </ul>
+            <span class="tag tag-blue" style="margin-top: auto;">50k+ req/sec throughput</span>
+          </div>
+
+          <div class="card">
+            <h3>🚀 gRPC + Protobuf v3</h3>
+            <ul>
+              <li>HTTP/2 binary transport with multiplexing and header compression.</li>
+              <li>Strictly-typed schemas in <code>proto/</code> directory.</li>
+              <li>Sub-millisecond latency for inventory holds and payment checks.</li>
+            </ul>
+            <span class="tag tag-green" style="margin-top: auto;">No JSON Serialization Lag</span>
+          </div>
+
+          <div class="card">
+            <h3>🔍 Elasticsearch 8 + GraphQL BFF</h3>
+            <ul>
+              <li>GraphQL schema-first SDL (single roundtrip for catalog, stock, and cart).</li>
+              <li>Edge N-Gram tokenizers for sub-10ms real-time autocomplete as users type.</li>
+              <li>Dynamic faceted filtering for categories, materials, and price tiers.</li>
+            </ul>
+            <span class="tag tag-orange" style="margin-top: auto;">BM25 Relevance Scoring</span>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+          <span>Modules: cmd/bff-server, proto/inventory/v1, schema/elasticsearch</span>
+          <span>Slide 2 of 5</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 (2:00 - 3:00) -->
+      <div class="slide" id="slide-2">
+        <div>
+          <span class="slide-badge">Minute 2:00 – 3:00 • Distributed Transactions</span>
+          <h2 class="slide-title">PostgreSQL Eshop & The Saga Pattern</h2>
+          <p class="slide-subtitle">Orchestrated distributed transactions with automated compensating rollbacks and zero event loss.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>🔄 Order Placement Saga Workflow</h3>
+            <ul>
+              <li><strong>Step 1:</strong> Inventory Service locks stock (15-min TTL hold).</li>
+              <li><strong>Step 2:</strong> Payment Service executes idempotent authorization.</li>
+              <li><strong>Step 3:</strong> If payment succeeds, commit inventory & order.</li>
+              <li><strong>Compensating Action:</strong> If payment fails or times out, the saga automatically calls <code>ReleaseReservation</code>.</li>
+            </ul>
+            <div class="code-box">
+// internal/orders/application/saga.go
+authResp, err := s.paymentSvc.Authorize(ctx, authReq)
+if err != nil || !authResp.Success {
+    // COMPENSATING ROLLBACK:
+    _ = s.inventorySvc.ReleaseReservation(ctx, resID)
+    return nil, fmt.Errorf("payment failed, hold released")
+}
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>📦 Transactional Outbox Pattern</h3>
+            <p style="margin-bottom: 8px;">Guarantees 100% reliable domain event delivery to Apache Kafka without two-phase commit overhead:</p>
+            <ul>
+              <li>Order row and <code>OrderPlaced</code> domain event are committed inside the <strong>same PostgreSQL ACID transaction</strong>.</li>
+              <li>Background Go worker polls <code>order_schema.outbox_events</code> and streams to Kafka with at-least-once delivery.</li>
+              <li>Decouples billing from email notifications and analytics.</li>
+            </ul>
+            <div style="margin-top: auto; display: flex; gap: 6px;">
+              <span class="tag tag-purple">Zero Lost Events</span>
+              <span class="tag tag-green">Eventual Consistency</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+          <span>Reference: internal/orders/application/saga.go & internal/pkg/outbox</span>
+          <span>Slide 3 of 5</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 (3:00 - 4:00) -->
+      <div class="slide" id="slide-3">
+        <div>
+          <span class="slide-badge">Minute 3:00 – 4:00 • Enterprise Security</span>
+          <h2 class="slide-title">Defense-in-Depth Security Framework</h2>
+          <p class="slide-subtitle">OWASP ASVS Level 3 compliant architecture with anti-replay idempotency and zero-trust controls.</p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3>🛡️ Composable Middleware</h3>
+            <ul>
+              <li><strong>RequestID:</strong> 128-bit cryptographically secure trace IDs for end-to-end audit logs.</li>
+              <li><strong>Recovery:</strong> Catches panics, sanitizes internal stack traces, returns safe JSON 500.</li>
+              <li><strong>Rate Limiter:</strong> Token-Bucket algorithm (600 req/min per IP) to neutralize DDoS and scraping.</li>
+            </ul>
+            <span class="tag tag-blue" style="margin-top: auto;">internal/pkg/middleware</span>
+          </div>
+
+          <div class="card">
+            <h3>🔑 Idempotency Gatekeeper</h3>
+            <ul>
+              <li>Intercepts <code>Idempotency-Key</code> header on all financial mutations.</li>
+              <li>Rejects concurrent duplicate requests in-flight (status <code>PENDING</code>).</li>
+              <li>Caches completed responses for 24 hours to prevent duplicate credit card charges.</li>
+            </ul>
+            <span class="tag tag-green" style="margin-top: auto;">Anti-Double-Billing</span>
+          </div>
+
+          <div class="card">
+            <h3>🔒 Zero-Trust & Data Hardening</h3>
+            <ul>
+              <li><strong>Zero-Trust Mesh:</strong> Mutual TLS (mTLS) across all internal gRPC endpoints.</li>
+              <li><strong>SQL Injection Immunity:</strong> 100% parameterized SQL bindings (zero string concatenation).</li>
+              <li><strong>PCI-DSS Compliance:</strong> Card details tokenized externally; raw PAN never stored.</li>
+            </ul>
+            <span class="tag tag-orange" style="margin-top: auto;">OWASP ASVS Level 3</span>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+          <span>Reference: internal/pkg/idempotency/manager.go & internal/pkg/middleware</span>
+          <span>Slide 4 of 5</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 5 (4:00 - 5:00) -->
+      <div class="slide" id="slide-5">
+        <div>
+          <span class="slide-badge">Minute 4:00 – 5:00 • Live Demo & Readiness</span>
+          <h2 class="slide-title">Live Storefront & Production Observability</h2>
+          <p class="slide-subtitle">Demonstrating real-time catalog discovery, cart persistence, and Kubernetes readiness probes.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>🖥️ React 18 Storefront (Port 3000)</h3>
+            <ul>
+              <li><strong>Real-Time Autocomplete:</strong> Powered by Elasticsearch 8 Edge N-Grams and GraphQL client cache.</li>
+              <li><strong>Dynamic Cart Drawer:</strong> Synchronized with Redis in-memory session store.</li>
+              <li><strong>Instant Checkout:</strong> Multi-step saga verification with immediate feedback.</li>
+            </ul>
+            <div class="code-box">
+$ go run ./cmd/bff-server     # Go API Gateway on :8080
+$ cd frontend && npm run dev  # React Vite on :3000
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🩺 Production Observability & Probes</h3>
+            <ul>
+              <li><strong>/healthz Endpoint:</strong> Real-time probe reporting PostgreSQL <code>Eshop</code> connectivity, Redis cache latency, and Kafka broker health.</li>
+              <li><strong>Graceful Shutdown:</strong> Intercepts <code>SIGINT</code> and <code>SIGTERM</code>, flushes pending outbox records, cleanly terminates active connections.</li>
+            </ul>
+            <div class="code-box">
+GET /healthz HTTP/1.1
+{
+  "status": "UP",
+  "database": "Eshop (PostgreSQL connected)",
+  "redis": "Healthy",
+  "kafka": "Connected"
+}
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+          <span>StyleHome Platform • Architectural Blueprint Complete</span>
+          <span>Slide 5 of 5</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TELEPROMPTER & VOICEOVER SUBTITLES -->
+    <div class="teleprompter-box">
+      <div class="teleprompter-speaker">🎙️ Narration:</div>
+      <div class="teleprompter-text" id="teleprompterText">
+        Welcome! Today we are doing a deep-dive walkthrough of StyleHome, an enterprise-grade e-commerce platform built to handle high-velocity flash sales and high-concurrency traffic using Go 1.26, CQRS, and PostgreSQL Eshop.
+      </div>
+    </div>
+
+    <!-- PLAYER CONTROLS & TIMELINE -->
+    <div class="player-controls">
+      <div class="progress-bar-container" onclick="handleSeek(event)">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="control-row">
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="prevSlide()">⏮ Prev</button>
+          <button class="btn btn-primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+          <button class="btn btn-secondary" onclick="nextSlide()">Next ⏭</button>
+          <span class="time-display" id="timeDisplay">0:00 / 5:00</span>
+        </div>
+
+        <div class="slide-tabs">
+          <button class="slide-tab active" onclick="goToSlide(0)">1. Topology</button>
+          <button class="slide-tab" onclick="goToSlide(1)">2. Tech Stack</button>
+          <button class="slide-tab" onclick="goToSlide(2)">3. Saga Pattern</button>
+          <button class="slide-tab" onclick="goToSlide(3)">4. Security</button>
+          <button class="slide-tab" onclick="goToSlide(4)">5. Live Demo</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RECORDING INSTRUCTIONS / NOTIFICATION OVERLAY -->
+  <div class="recording-notice" id="recordingNotice">
+    <h4>⏺ Video Recording Active</h4>
+    <p id="recStatusText">Your browser is now capturing this presentation. The video file will download automatically when completed.</p>
+  </div>
+
+  <script>
+    // 5-Minute Script Definition (60 seconds per slide = 300s total)
+    const slidesData = [
+      {
+        duration: 60,
+        text: "Welcome! Today we are doing a deep-dive walkthrough of StyleHome, an enterprise-grade e-commerce platform built to handle high-velocity flash sales and high-concurrency traffic. At its heart, the system is designed around Domain-Driven Design and Command Query Responsibility Segregation. Instead of a monolithic architecture where search spikes degrade checkout, we strictly decouple write commands from read queries. Our React 18 client talks to a high-speed GraphQL BFF. Behind it lies a microservices mesh communicating over gRPC, backed by a dedicated PostgreSQL database named Eshop, Redis 7, Elasticsearch 8, and Apache Kafka."
+      },
+      {
+        duration: 60,
+        text: "A defining feature of this codebase is our backend runtime: Go 1.26 using pure Standard Library net/http with zero external web frameworks. Eliminating third-party routing dependencies protects us from framework churn, breaking changes, and supply-chain vulnerabilities. Go's HTTP server allocates lightweight goroutines per connection, consuming only around 2 kilobytes of memory. For internal microservices, we use gRPC over HTTP/2 with Protocol Buffers v3 for sub-millisecond latency. On the front end, GraphQL BFF resolves multi-service data in a single roundtrip, while Elasticsearch 8 powers sub-10ms autocomplete."
+      },
+      {
+        duration: 60,
+        text: "Handling distributed transactions across microservices without deadlocks is critical. Two-phase commit doesn't scale, so StyleHome implements an Orchestrated Saga Pattern in Go. When an order is placed, the Saga reserves inventory for 15 minutes, authorizes payment idempotently, and commits the order to PostgreSQL Eshop. If payment fails, the Saga automatically triggers a compensating transaction, immediately releasing held stock. To guarantee zero event loss to Kafka, we use the Transactional Outbox Pattern, committing domain events inside the exact same ACID transaction as the order."
+      },
+      {
+        duration: 60,
+        text: "Security is architected into the foundation of StyleHome, adhering to OWASP ASVS Level 3 standards. Every request traverses a zero-allocation Go middleware pipeline: RequestID for 128-bit distributed tracing, Panic Recovery for sanitized JSON errors, and Token-Bucket Rate Limiting per IP. For financial integrity, our Idempotency Key Manager locks transactions in-flight, preventing duplicate credit card charges and replay attacks. Furthermore, internal services communicate over mutual TLS, SQL queries use strict parameterized bindings, and payment credentials are fully tokenized for PCI-DSS compliance."
+      },
+      {
+        duration: 60,
+        text: "Here on port 3000, our React 18 TypeScript application demonstrates real-time catalog browsing with instant Edge N-Gram search autocomplete and faceted navigation. Adding an item to the cart updates state in Redis, and checking out triggers the distributed Saga in milliseconds. In production, the system is monitored via our /healthz probe, reporting PostgreSQL, Redis, and Kafka connectivity. In summary, StyleHome combines Go net/http performance, gRPC speed, GraphQL flexibility, Saga resilience, and bank-grade security. Thank you for watching!"
+      }
+    ];
+
+    let currentSlide = 0;
+    let isPlaying = false;
+    let isSpeechEnabled = true;
+    let timer = null;
+    let slideElapsed = 0; // seconds into current slide
+    let totalElapsed = 0; // total seconds (0 to 300)
+    const TOTAL_DURATION = 300; // 5 minutes
+
+    // Speech synthesis setup
+    const synth = window.speechSynthesis;
+    let currentUtterance = null;
+
+    function updateView() {
+      // Update slides
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentSlide);
+      });
+
+      // Update tabs
+      document.querySelectorAll('.slide-tab').forEach((tab, idx) => {
+        tab.classList.toggle('active', idx === currentSlide);
+      });
+
+      // Update teleprompter
+      document.getElementById('teleprompterText').innerText = slidesData[currentSlide].text;
+
+      // Update progress & time
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      const pct = (totalElapsed / TOTAL_DURATION) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+
+      const mins = Math.floor(totalElapsed / 60);
+      const secs = totalElapsed % 60;
+      document.getElementById('timeDisplay').innerText = 
+        `${mins}:${secs < 10 ? '0' : ''}${secs} / 5:00`;
+    }
+
+    function speakCurrentSlide() {
+      if (!synth || !isSpeechEnabled) return;
+      synth.cancel(); // stop previous speech
+
+      const text = slidesData[currentSlide].text;
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.rate = 1.05;
+      currentUtterance.pitch = 1.0;
+      
+      // Select natural English voice if available
+      const voices = synth.getVoices();
+      const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Daniel')));
+      if (preferred) {
+        currentUtterance.voice = preferred;
+      }
+
+      synth.speak(currentUtterance);
+    }
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slidesData.length) return;
+      currentSlide = index;
+      slideElapsed = 0;
+      totalElapsed = currentSlide * 60;
+      updateView();
+      if (isPlaying) {
+        speakCurrentSlide();
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < slidesData.length - 1) {
+        goToSlide(currentSlide + 1);
+      } else {
+        pause();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        goToSlide(currentSlide - 1);
+      }
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+    }
+
+    function play() {
+      isPlaying = true;
+      document.getElementById('playBtn').innerText = '⏸ Pause';
+      speakCurrentSlide();
+
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
+        totalElapsed++;
+        slideElapsed++;
+
+        if (totalElapsed >= TOTAL_DURATION) {
+          totalElapsed = TOTAL_DURATION;
+          updateProgressBar();
+          pause();
+          return;
+        }
+
+        // Auto advance slide every 60s
+        if (slideElapsed >= 60 && currentSlide < slidesData.length - 1) {
+          currentSlide++;
+          slideElapsed = 0;
+          updateView();
+          speakCurrentSlide();
+        } else {
+          updateProgressBar();
+        }
+      }, 1000);
+    }
+
+    function pause() {
+      isPlaying = false;
+      document.getElementById('playBtn').innerText = '▶ Play';
+      if (timer) clearInterval(timer);
+      if (synth) synth.cancel();
+    }
+
+    function handleSeek(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = clickX / rect.width;
+      totalElapsed = Math.floor(ratio * TOTAL_DURATION);
+      currentSlide = Math.min(Math.floor(totalElapsed / 60), slidesData.length - 1);
+      slideElapsed = totalElapsed % 60;
+      updateView();
+      if (isPlaying) speakCurrentSlide();
+    }
+
+    function toggleSpeech() {
+      isSpeechEnabled = !isSpeechEnabled;
+      document.getElementById('speechStateText').innerText = isSpeechEnabled ? 'ON' : 'OFF';
+      document.getElementById('speechIcon').innerText = isSpeechEnabled ? '🔊' : '🔇';
+      if (!isSpeechEnabled && synth) {
+        synth.cancel();
+      } else if (isSpeechEnabled && isPlaying) {
+        speakCurrentSlide();
+      }
+    }
+
+    function toggleFullscreen() {
+      const frame = document.getElementById('presentationFrame');
+      if (!document.fullscreenElement) {
+        frame.requestFullscreen().catch(err => alert("Fullscreen error: " + err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Client-Side Screen / Presentation Recording
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    async function toggleRecording() {
+      const recordBtn = document.getElementById('recordBtn');
+      const notice = document.getElementById('recordingNotice');
+
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: "browser", width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: 30 },
+            audio: true
+          });
+
+          recordedChunks = [];
+          const options = { mimeType: 'video/webm;codecs=vp9' };
+          mediaRecorder = new MediaRecorder(stream, options);
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) recordedChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'StyleHome_5Min_Technical_Presentation.webm';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            }, 100);
+
+            isRecording = false;
+            recordBtn.classList.remove('recording');
+            document.getElementById('recordIcon').innerText = '⏺';
+            document.getElementById('recordText').innerText = 'Record Video File';
+            notice.style.display = 'none';
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+          recordBtn.classList.add('recording');
+          document.getElementById('recordIcon').innerText = '⏹';
+          document.getElementById('recordText').innerText = 'Stop & Save Video';
+          notice.style.display = 'block';
+
+          // Reset presentation and play
+          goToSlide(0);
+          play();
+
+        } catch (err) {
+          alert("Screen capture was cancelled or not supported. You can also use Windows built-in Game Bar (Win + Alt + R) to record directly to MP4!");
+        }
+      } else {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+      }
+    }
+
+    // Preload voices
+    if (synth && synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = () => {};
+    }
+  </script>
+</body>
+</html>

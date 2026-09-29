@@ -47,11 +47,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
+          background: 'rgba(5, 5, 5, 0.7)',
           backdropFilter: 'blur(4px)',
           animation: 'fadeIn 0.2s ease-out',
         }}
       />
+
 
       {/* Slide-out Drawer */}
       <div
@@ -172,6 +173,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <button type="submit" className="btn-secondary" style={{ padding: '0.6rem 1rem', fontSize: '0.85rem' }}>
                 <Tag size={15} /> Apply
               </button>
+
             </form>
 
             {cart.coupon && (
@@ -218,6 +220,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };

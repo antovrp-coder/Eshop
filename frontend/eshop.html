@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Fundamentals & Hooks — Visual Memory Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0c10;
+      --bg-card: #131720;
+      --bg-card-elevated: #1a202c;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(226, 177, 112, 0.4);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      
+      --accent-gold: #f59e0b;
+      --accent-gold-glow: rgba(245, 158, 11, 0.25);
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-purple: #a855f7;
+      --accent-rose: #f43f5e;
+      --accent-blue: #3b82f6;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 5rem;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 60%, rgba(6, 182, 212, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.06) 0%, transparent 45%);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header & Hero */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--accent-gold);
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+    }
+
+    /* Global Controls */
+    .controls-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn-toggle-all {
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1.2rem;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle-all:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      transform: translateY(-1px);
+    }
+
+    /* Collapsible Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .card-header-clickable {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.5rem 0.25rem;
+      border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+
+    .card-header-clickable:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Expand/Collapse Interactive Badge */
+    .expand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+    }
+
+    .card:hover .expand-badge {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .expand-chevron {
+      font-size: 0.75rem;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    /* Chapter 1 Master Card & Code Navigator */
+    .chapter-master-card {
+      background: linear-gradient(180deg, #151a24 0%, var(--bg-card) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
+      transition: all 0.3s ease;
+    }
+    .chapter-master-card:hover {
+      border-color: rgba(245, 158, 11, 0.7);
+    }
+    .chapter-header-clickable {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.5rem 0.25rem;
+      border-radius: var(--radius-sm);
+    }
+    .chapter-expand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+    }
+    .chapter-master-card:hover .chapter-expand-badge {
+      background: var(--accent-gold);
+      color: #000;
+      box-shadow: 0 4px 15px var(--accent-gold-glow);
+    }
+    .chapter-expand-chevron {
+      font-size: 0.8rem;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+    .chapter-collapsible-body {
+      margin-top: 2rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border-color);
+      animation: fadeIn 0.35s ease forwards;
+    }
+    .chapter-master-card.is-collapsed .chapter-collapsible-body {
+      display: none;
+    }
+    .chapter-master-card.is-collapsed .chapter-expand-chevron {
+      transform: rotate(-90deg);
+    }
+    .chapter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      margin-bottom: 0.75rem;
+    }
+    .chapter-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .chapter-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+    .code-navigator {
+      background: #090c12;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
+    }
+    .nav-line {
+      display: flex;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      transition: background 0.2s;
+      gap: 1rem;
+    }
+    .nav-line:hover {
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .nav-line .ln {
+      color: #475569;
+      width: 35px;
+      font-size: 0.8rem;
+      user-select: none;
+      text-align: right;
+    }
+    .nav-line code {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .jump-pill {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Collapsible Content Area */
+    .collapsible-body {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      animation: fadeIn 0.35s ease forwards;
+    }
+
+    .is-collapsed .collapsible-body {
+      display: none;
+    }
+
+    .is-collapsed .expand-chevron {
+      transform: rotate(-90deg);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      color: #e6edf3;
+      margin: 1rem 0;
+    }
+
+    .token-keyword { color: #ff7b72; font-weight: 600; }
+    .token-var { color: #79c0ff; }
+    .token-func { color: #d2a8ff; font-weight: 600; }
+    .token-str { color: #a5d6ff; }
+    .token-comment { color: #8b949e; font-style: italic; }
+    .token-tag { color: #7ee787; }
+
+    /* SVG Visual Container */
+    .visual-canvas {
+      background: #090c12;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visual-caption {
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-top: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .hook-pill {
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hook-pill::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .pill-gold::before { background: var(--accent-gold); }
+    .pill-cyan::before { background: var(--accent-cyan); }
+    .pill-emerald::before { background: var(--accent-emerald); }
+    .pill-purple::before { background: var(--accent-purple); }
+    .pill-rose::before { background: var(--accent-rose); }
+    .pill-blue::before { background: var(--accent-blue); }
+
+    /* Interactive Live Playground */
+    .playground {
+      background: #0d1117;
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .playground-header {
+      font-size: 0.9rem;
+      color: var(--accent-gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .interactive-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-gold {
+      background: var(--accent-gold);
+      color: #000;
+    }
+    .btn-gold:hover {
+      background: #fcd34d;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--accent-gold-glow);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+    }
+
+    .state-screen {
+      padding: 0.6rem 1.2rem;
+      background: #161b22;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-family: 'Fira Code', monospace;
+      font-size: 1.1rem;
+    }
+
+    /* Comparison Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: var(--bg-card-elevated);
+      color: var(--accent-gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="badge">🧠 Interactive Visual Memory Guide</div>
+      <h1>React &amp; StyleHome Architecture Guide</h1>
+      <p class="subtitle">Complete line-by-line master analysis of your application from initial boot to live React components.</p>
+    </header>
+
+    <!-- CHAPTER 1 MASTER CONTAINER (COLLAPSIBLE - CLICK TO EXPAND 7 POINTS) -->
+    <section class="chapter-master-card is-collapsed" id="chapter-1">
+      <div class="chapter-header-clickable" onclick="toggleChapter('chapter-1')">
+        <div class="chapter-header-left">
+          <div class="chapter-tag">📖 CHAPTER 1 · APPLICATION ENTRY POINT</div>
+          <h2 class="chapter-title">main.tsx — Complete Architectural Breakdown (7 Points)</h2>
+          <p class="chapter-subtitle">
+            Lines 1–12 of <code>frontend/src/main.tsx</code> · Click this Chapter header to open all 7 points
+          </p>
+        </div>
+        <div class="chapter-expand-badge">
+          <span class="chapter-badge-text">Expand Chapter 1 (7 Points)</span>
+          <span class="chapter-expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- CHAPTER 1 COLLAPSIBLE BODY (Contains the 12-line Navigator + All 7 Points) -->
+      <div class="chapter-collapsible-body">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          Below is your complete 12-line source file. Click any line in the code box or click any of the 7 cards below to expand its detailed explanation, story, and visual diagram!
+        </p>
+
+        <!-- Interactive Line-by-Line Code Navigator -->
+        <div class="code-navigator" style="margin-bottom: 2rem;">
+          <div class="nav-line" onclick="openAndScrollTo('section-1')">
+            <span class="ln">1</span>
+            <code><span class="token-keyword">import</span> <span class="token-var">React</span> <span class="token-keyword">from</span> <span class="token-str">'react'</span>;</code>
+            <span class="jump-pill pill-gold">Line 1 ➔ Point 1: Core APIs &amp; StrictMode</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-2')">
+            <span class="ln">2</span>
+            <code><span class="token-comment">//COMPONETS,HOOKS,JSX</span></code>
+            <span class="jump-pill pill-emerald">Line 2 ➔ Point 2: What Are Hooks?</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-3')">
+            <span class="ln">3</span>
+            <code><span class="token-comment">//Hooks = Functions that let functional components manage state, side effects...</span></code>
+            <span class="jump-pill pill-rose">Line 3 ➔ Point 3: 2 Golden Rules</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-4')">
+            <span class="ln">4</span>
+            <code><span class="token-keyword">import</span> <span class="token-var">ReactDOM</span> <span class="token-keyword">from</span> <span class="token-str">'react-dom/client'</span>;</code>
+            <span class="jump-pill pill-cyan">Line 4 ➔ Point 4: The Builder Bridge</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-5')">
+            <span class="ln">5</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">App</span> } <span class="token-keyword">from</span> <span class="token-str">'./app/App'</span>;</code>
+            <span class="jump-pill pill-purple">Line 5 ➔ Point 5: The Master Castle</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-6')">
+            <span class="ln">6</span>
+            <code><span class="token-keyword">import</span> <span class="token-str">'./index.css'</span>;</code>
+            <span class="jump-pill pill-gold">Line 6 ➔ Point 6: The Royal Tailor</span>
+          </div>
+          <div class="nav-line" style="opacity: 0.4; cursor: default;">
+            <span class="ln">7</span>
+            <code></code>
+            <span style="font-size: 0.75rem; color: #64748b;">(Empty line separator)</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('section-7')">
+            <span class="ln">8-12</span>
+            <code><span class="token-var">ReactDOM</span>.<span class="token-func">createRoot</span>(document.<span class="token-func">getElementById</span>(<span class="token-str">'root'</span>) <span class="token-keyword">as</span> <span class="token-var">HTMLElement</span>).<span class="token-func">render</span>(...);</code>
+            <span class="jump-pill pill-emerald">Lines 8-12 ➔ Point 7: Launchpad Ignition</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span style="font-size: 0.9rem; color: var(--accent-gold); font-weight: 600;">
+            👇 The 7 Individual Points Below (Click any point to expand):
+          </span>
+          <button class="btn-toggle-all" id="btn-toggle-all">📂 Expand All 7 Points</button>
+        </div>
+
+    <!-- SECTION 1: import React from 'react'; (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-1">
+      <div class="card-header-clickable" onclick="toggleSection('section-1')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">📦</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-gold);">1. What Does <code style="color: #fff;">import React from 'react';</code> Do?</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Line 1 of <code>frontend/src/main.tsx</code> · Click to view core imports, strict mode & SVG diagram</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <pre><code><span class="token-keyword">import</span> <span class="token-var">React</span> <span class="token-keyword">from</span> <span class="token-str">'react'</span>;
+<span class="token-keyword">import</span> <span class="token-var">ReactDOM</span> <span class="token-keyword">from</span> <span class="token-str">'react-dom/client'</span>;
+
+<span class="token-var">ReactDOM</span>.<span class="token-func">createRoot</span>(document.<span class="token-func">getElementById</span>(<span class="token-str">'root'</span>)).<span class="token-func">render</span>(
+  <span class="token-tag">&lt;React.StrictMode&gt;</span>
+    <span class="token-tag">&lt;App /&gt;</span>
+  <span class="token-tag">&lt;/React.StrictMode&gt;</span>
+);</code></pre>
+
+        <!-- SVG Drawing for Section 1 -->
+        <div class="visual-canvas">
+          <svg width="100%" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- React Core Box -->
+            <rect x="30" y="30" width="220" height="160" rx="14" fill="#161b22" stroke="#f59e0b" stroke-width="2" />
+            <text x="140" y="65" fill="#f59e0b" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="16" text-anchor="middle">📦 React Package ('react')</text>
+            
+            <rect x="50" y="85" width="180" height="28" rx="6" fill="#1f2937" />
+            <text x="140" y="104" fill="#93c5fd" font-size="12" font-family="monospace" text-anchor="middle">&lt;React.StrictMode&gt;</text>
+            
+            <rect x="50" y="120" width="180" height="28" rx="6" fill="#1f2937" />
+            <text x="140" y="139" fill="#a78bfa" font-size="12" font-family="monospace" text-anchor="middle">useState, useEffect, etc.</text>
+            
+            <rect x="50" y="155" width="180" height="25" rx="6" fill="#1f2937" />
+            <text x="140" y="172" fill="#6ee7b7" font-size="11" font-family="monospace" text-anchor="middle">TypeScript: React.FC</text>
+
+            <!-- Arrow Flow -->
+            <path d="M 260 110 L 370 110" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,6" />
+            <polygon points="370,110 360,104 360,116" fill="#f59e0b" />
+            <text x="315" y="98" fill="#f59e0b" font-size="11" font-weight="600" text-anchor="middle">import React</text>
+
+            <!-- App / main.tsx -->
+            <rect x="380" y="30" width="340" height="160" rx="14" fill="#111827" stroke="#3b82f6" stroke-width="2" />
+            <text x="550" y="65" fill="#60a5fa" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="16" text-anchor="middle">🖥️ Your App (main.tsx & App.tsx)</text>
+            
+            <rect x="400" y="85" width="300" height="32" rx="6" fill="#1e293b" />
+            <text x="550" y="106" fill="#e2e8f0" font-size="12" text-anchor="middle">🛡️ Enforces Strict Safety Checks</text>
+            
+            <rect x="400" y="125" width="300" height="50" rx="6" fill="#1e293b" />
+            <text x="550" y="145" fill="#e2e8f0" font-size="12" text-anchor="middle">⚡ Powers Interactive Component Logic</text>
+            <text x="550" y="163" fill="#94a3b8" font-size="11" text-anchor="middle">(State, Hooks, Lifecycle, Cart, Search)</text>
+          </svg>
+          <span class="visual-caption">Figure 1: How the React Core Library Powers Your Components</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+            <strong style="color: var(--accent-gold);">1. Strict Mode Safety</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Catches accidental side effects, deprecated methods, and bad memory leaks.</p>
+          </div>
+          <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan);">
+            <strong style="color: var(--accent-cyan);">2. Hook Definitions</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Provides standard state mechanisms for your UI functional components.</p>
+          </div>
+          <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+            <strong style="color: var(--accent-emerald);">3. TypeScript Contracts</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Defines <code>React.FC</code>, <code>React.MouseEvent</code>, and component prop typings.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: WHAT ARE HOOKS? (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-2">
+      <div class="card-header-clickable" onclick="toggleSection('section-2')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">🎣</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-emerald);">2. What Are Hooks in React? (Mental Model)</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">The Fishing Hook Metaphor · All 6 Essential Hooks · Live Interactive Playground</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <!-- Visual Drawing: The Fishing Hook Metaphor -->
+        <div class="visual-canvas">
+          <svg width="100%" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Functional Component -->
+            <rect x="40" y="30" width="260" height="180" rx="14" fill="#131720" stroke="#10b981" stroke-width="2" />
+            <text x="170" y="65" fill="#10b981" font-weight="700" font-size="16" text-anchor="middle">🎨 Functional Component</text>
+            <text x="170" y="90" fill="#94a3b8" font-size="12" text-anchor="middle">Simple, pure JavaScript function</text>
+            
+            <rect x="60" y="110" width="220" height="40" rx="8" fill="#1e293b" />
+            <text x="170" y="135" fill="#f1f5f9" font-family="monospace" font-size="13" font-weight="600" text-anchor="middle">const [cart, setCart] = useState()</text>
+
+            <text x="170" y="180" fill="#6ee7b7" font-size="11" text-anchor="middle">Needs memory & lifecycle...</text>
+
+            <!-- Fishing Hook SVG in center -->
+            <path d="M 310 130 C 370 130, 390 70, 420 70 C 440 70, 450 90, 430 110 C 420 120, 390 150, 400 170 C 410 190, 440 180, 450 160" 
+                  fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" />
+            <polygon points="450,160 455,145 440,150" fill="#f59e0b" />
+            <text x="390" y="45" fill="#f59e0b" font-weight="800" font-size="14" text-anchor="middle">🎣 HOOK</text>
+
+            <!-- React Internal Engine -->
+            <rect x="470" y="30" width="260" height="180" rx="14" fill="#0f172a" stroke="#06b6d4" stroke-width="2" />
+            <text x="600" y="65" fill="#06b6d4" font-weight="700" font-size="16" text-anchor="middle">⚙️ React Engine Core</text>
+            
+            <rect x="490" y="85" width="220" height="30" rx="6" fill="#1e293b" />
+            <text x="600" y="105" fill="#a5f3fc" font-size="12" text-anchor="middle">💾 Fiber State Memory Tree</text>
+
+            <rect x="490" y="125" width="220" height="30" rx="6" fill="#1e293b" />
+            <text x="600" y="145" fill="#cbd5e1" font-size="12" text-anchor="middle">🔄 Re-render Scheduler</text>
+
+            <rect x="490" y="165" width="220" height="30" rx="6" fill="#1e293b" />
+            <text x="600" y="185" fill="#cbd5e1" font-size="12" text-anchor="middle">🌐 Context & DOM References</text>
+          </svg>
+          <span class="visual-caption">Figure 2: The Hook Metaphor — Hooking Pure Functions into React's Engine</span>
+        </div>
+
+        <!-- Essential Hooks Cards -->
+        <h3 style="margin: 2rem 0 1rem; color: #fff; font-size: 1.25rem;">✨ The 6 Essential Hooks to Remember:</h3>
+
+        <div class="grid-2">
+          <!-- 1. useState -->
+          <div class="hook-pill pill-gold">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-gold); font-size: 1.15rem;">1. useState</strong>
+              <span style="font-size: 0.8rem; background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); padding: 0.2rem 0.6rem; border-radius: 99px;">State Memory</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Remember data between renders. Calling the setter function updates the value and re-renders the component.
+            </p>
+            <pre><code><span class="token-keyword">const</span> [<span class="token-var">count</span>, <span class="token-func">setCount</span>] = <span class="token-func">useState</span>(<span class="token-str">0</span>);</code></pre>
+          </div>
+
+          <!-- 2. useEffect -->
+          <div class="hook-pill pill-cyan">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-cyan); font-size: 1.15rem;">2. useEffect</strong>
+              <span style="font-size: 0.8rem; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.6rem; border-radius: 99px;">Side Effects</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Runs code after rendering (API data fetching, timers, subscribing to websocket channels).
+            </p>
+            <pre><code><span class="token-func">useEffect</span>(() =&gt; { <span class="token-func">loadCart</span>(); }, []);</code></pre>
+          </div>
+
+          <!-- 3. useContext -->
+          <div class="hook-pill pill-purple">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-purple); font-size: 1.15rem;">3. useContext</strong>
+              <span style="font-size: 0.8rem; background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); padding: 0.2rem 0.6rem; border-radius: 99px;">Teleport Data</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Skip "prop-drilling" through 10 parent components. Directly read global themes, auth, or cart states.
+            </p>
+            <pre><code><span class="token-keyword">const</span> <span class="token-var">user</span> = <span class="token-func">useContext</span>(<span class="token-var">AuthContext</span>);</code></pre>
+          </div>
+
+          <!-- 4. useRef -->
+          <div class="hook-pill pill-emerald">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-emerald); font-size: 1.15rem;">4. useRef</strong>
+              <span style="font-size: 0.8rem; background: rgba(168, 185, 129, 0.15); color: var(--accent-emerald); padding: 0.2rem 0.6rem; border-radius: 99px;">Secret Box</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Holds a mutable value across renders <em>without</em> triggering a re-render. Also holds direct DOM node references.
+            </p>
+            <pre><code><span class="token-keyword">const</span> <span class="token-var">inputRef</span> = <span class="token-func">useRef</span>(<span class="token-keyword">null</span>);</code></pre>
+          </div>
+
+          <!-- 5. useMemo -->
+          <div class="hook-pill pill-blue">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-blue); font-size: 1.15rem;">5. useMemo</strong>
+              <span style="font-size: 0.8rem; background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); padding: 0.2rem 0.6rem; border-radius: 99px;">Calculation Cache</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Caches the result of an expensive calculation so it doesn't recalculate on every single render.
+            </p>
+            <pre><code><span class="token-keyword">const</span> <span class="token-var">total</span> = <span class="token-func">useMemo</span>(() =&gt; <span class="token-func">calc</span>(<span class="token-var">cart</span>), [<span class="token-var">cart</span>]);</code></pre>
+          </div>
+
+          <!-- 6. useCallback -->
+          <div class="hook-pill pill-rose">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--accent-rose); font-size: 1.15rem;">6. useCallback</strong>
+              <span style="font-size: 0.8rem; background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); padding: 0.2rem 0.6rem; border-radius: 99px;">Function Cache</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Prevents function recreation on every render, keeping props stable for optimized child components.
+            </p>
+            <pre><code><span class="token-keyword">const</span> <span class="token-var">click</span> = <span class="token-func">useCallback</span>(() =&gt; {}, []);</code></pre>
+          </div>
+        </div>
+
+        <!-- Live Interactive Demo -->
+        <div class="playground">
+          <div class="playground-header">🎮 Live Interactive Playground: Test useState & useRef Right Here</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Notice: Clicking <strong>"Update State"</strong> changes the count and re-renders the screen. Clicking <strong>"Increment Ref"</strong> mutates memory without causing a re-render!
+          </p>
+          <div class="interactive-row">
+            <button class="btn btn-gold" id="btn-state">Click to useState (Count: <span id="val-state">0</span>)</button>
+            <button class="btn btn-secondary" id="btn-ref">Click to mutate useRef (Stored: <span id="val-ref">0</span>)</button>
+            <div class="state-screen" id="render-log">Render Count: 1</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: THE 2 GOLDEN RULES (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-3">
+      <div class="card-header-clickable" onclick="toggleSection('section-3')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose);">⚖️</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-rose);">3. The 2 Golden Rules of Hooks</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Lines 2–3 of <code>frontend/src/main.tsx</code> · Why React breaks if you don't follow call order</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <div class="collapsible-body">
+        <!-- SVG Drawing: Golden Rules Visualization -->
+        <div class="visual-canvas">
+          <svg width="100%" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- Allowed: Top Level -->
+            <rect x="40" y="25" width="320" height="170" rx="14" fill="#064e3b" stroke="#10b981" stroke-width="2" />
+            <text x="200" y="55" fill="#6ee7b7" font-weight="700" font-size="15" text-anchor="middle">✅ RULE 1: ONLY AT THE TOP LEVEL</text>
+            
+            <rect x="60" y="75" width="280" height="30" rx="6" fill="#042f2e" />
+            <text x="200" y="95" fill="#a7f3d0" font-family="monospace" font-size="12" text-anchor="middle">function MyComponent() {</text>
+
+            <rect x="60" y="112" width="280" height="30" rx="6" fill="#0f766e" />
+            <text x="200" y="132" fill="#fff" font-family="monospace" font-weight="700" font-size="12" text-anchor="middle">  useState(); useEffect(); ✅</text>
+
+            <text x="200" y="175" fill="#6ee7b7" font-size="11" text-anchor="middle">React relies on strict order of calls!</text>
+
+            <!-- Forbidden: Conditional / Inside Loops -->
+            <rect x="400" y="25" width="320" height="170" rx="14" fill="#4c0519" stroke="#f43f5e" stroke-width="2" />
+            <text x="560" y="55" fill="#fda4af" font-weight="700" font-size="15" text-anchor="middle">❌ FORBIDDEN: INSIDE CONDITIONS</text>
+
+            <rect x="420" y="75" width="280" height="30" rx="6" fill="#2c0b0e" />
+            <text x="560" y="95" fill="#fecdd3" font-family="monospace" font-size="12" text-anchor="middle">if (userIsLoggedIn) {</text>
+
+            <rect x="420" y="112" width="280" height="30" rx="6" fill="#9f1239" />
+            <text x="560" y="132" fill="#fff" font-family="monospace" font-weight="700" font-size="12" text-anchor="middle">  useState(); 💥 CRASH!</text>
+
+            <text x="560" y="175" fill="#fda4af" font-size="11" text-anchor="middle">Skipping a hook changes the call index!</text>
+          </svg>
+          <span class="visual-caption">Figure 3: Why Call Order Matters in React's Internal Array</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>What to Do</th>
+              <th>What NOT to Do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color: var(--accent-rose);">Rule #1</strong></td>
+              <td>Always call hooks at the <strong>very top</strong> of your component.</td>
+              <td>Never call hooks inside <code>if (...)</code>, <code>for (...)</code>, or nested functions.</td>
+            </tr>
+            <tr>
+              <td><strong style="color: var(--accent-rose);">Rule #2</strong></td>
+              <td>Call hooks from <strong>React Functional Components</strong> or <strong>Custom Hooks</strong> (e.g. <code>useCart()</code>).</td>
+              <td>Never call hooks in regular JavaScript utility files or class components.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: import ReactDOM from 'react-dom/client'; (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-4">
+      <div class="card-header-clickable" onclick="toggleSection('section-4')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🏗️</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-cyan);">4. What Does <code style="color: #fff;">import ReactDOM from 'react-dom/client';</code> Do?</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Line 4 of <code>frontend/src/main.tsx</code> · The Builder Bridge: React Virtual World ➔ Real Browser DOM</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <pre><code><span class="token-keyword">import</span> <span class="token-var">ReactDOM</span> <span class="token-keyword">from</span> <span class="token-str">'react-dom/client'</span>;
+
+<span class="token-comment">// 1. Find the real HTML element in index.html</span>
+<span class="token-comment">// 2. createRoot initializes the React 18 Concurrent engine</span>
+<span class="token-comment">// 3. .render(&lt;App /&gt;) physically injects &amp; paints the application</span>
+<span class="token-var">ReactDOM</span>.<span class="token-func">createRoot</span>(document.<span class="token-func">getElementById</span>(<span class="token-str">'root'</span>) <span class="token-keyword">as</span> <span class="token-var">HTMLElement</span>).<span class="token-func">render</span>(
+  <span class="token-tag">&lt;React.StrictMode&gt;</span>
+    <span class="token-tag">&lt;App /&gt;</span>
+  <span class="token-tag">&lt;/React.StrictMode&gt;</span>
+);</code></pre>
+
+        <!-- SVG Drawing for Section 4 -->
+        <div class="visual-canvas">
+          <svg width="100%" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- 1. The Architect (React) -->
+            <rect x="30" y="30" width="200" height="175" rx="14" fill="#131720" stroke="#f59e0b" stroke-width="2" />
+            <text x="130" y="60" fill="#f59e0b" font-weight="700" font-size="14" text-anchor="middle">📐 1. THE ARCHITECT</text>
+            <text x="130" y="80" fill="#fff" font-family="monospace" font-size="13" font-weight="600" text-anchor="middle">React Library</text>
+            
+            <rect x="45" y="95" width="170" height="40" rx="6" fill="#1e293b" />
+            <text x="130" y="113" fill="#cbd5e1" font-size="11" text-anchor="middle">Virtual DOM Blueprint</text>
+            <text x="130" y="127" fill="#94a3b8" font-size="10" font-family="monospace" text-anchor="middle">&lt;App /&gt;, &lt;Navbar /&gt;</text>
+
+            <rect x="45" y="142" width="170" height="48" rx="6" fill="#1e293b" />
+            <text x="130" y="160" fill="#fcd34d" font-size="11" text-anchor="middle">⚠️ Doesn't know how</text>
+            <text x="130" y="175" fill="#fcd34d" font-size="10" text-anchor="middle">to touch browser pixels!</text>
+
+            <!-- Arrow 1 -->
+            <path d="M 235 118 L 285 118" stroke="#06b6d4" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="285,118 277,112 277,124" fill="#06b6d4" />
+
+            <!-- 2. The Bridge/Builder (ReactDOM/client) -->
+            <rect x="290" y="25" width="210" height="185" rx="14" fill="#0c2331" stroke="#06b6d4" stroke-width="2" />
+            <text x="395" y="55" fill="#38bdf8" font-weight="700" font-size="14" text-anchor="middle">🏗️ 2. THE BUILDER BRIDGE</text>
+            <text x="395" y="75" fill="#a5f3fc" font-family="monospace" font-size="12" font-weight="600" text-anchor="middle">ReactDOM ('react-dom/client')</text>
+            
+            <rect x="305" y="90" width="180" height="35" rx="6" fill="#153e54" />
+            <text x="395" y="108" fill="#e0f2fe" font-size="11" font-family="monospace" text-anchor="middle">createRoot(#root)</text>
+            <text x="395" y="120" fill="#7dd3fc" font-size="9" text-anchor="middle">Mounts React 18 Engine</text>
+
+            <rect x="305" y="132" width="180" height="42" rx="6" fill="#153e54" />
+            <text x="395" y="150" fill="#e0f2fe" font-size="11" font-family="monospace" text-anchor="middle">.render(&lt;App /&gt;)</text>
+            <text x="395" y="165" fill="#6ee7b7" font-size="10" text-anchor="middle">Converts Virtual ➔ Real DOM</text>
+
+            <text x="395" y="196" fill="#38bdf8" font-size="10" font-weight="600" text-anchor="middle">Fast Diffing &amp; Patching</text>
+
+            <!-- Arrow 2 -->
+            <path d="M 505 118 L 555 118" stroke="#10b981" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="555,118 547,112 547,124" fill="#10b981" />
+
+            <!-- 3. The Browser Screen (Real DOM) -->
+            <rect x="560" y="30" width="170" height="175" rx="14" fill="#062e24" stroke="#10b981" stroke-width="2" />
+            <text x="645" y="60" fill="#34d399" font-weight="700" font-size="14" text-anchor="middle">🌐 3. THE BROWSER DOM</text>
+            <text x="645" y="80" fill="#a7f3d0" font-family="monospace" font-size="11" text-anchor="middle">index.html Document</text>
+            
+            <rect x="575" y="95" width="140" height="35" rx="6" fill="#064e3b" />
+            <text x="645" y="112" fill="#6ee7b7" font-size="10" font-family="monospace" text-anchor="middle">&lt;div id="root"&gt;</text>
+            <text x="645" y="124" fill="#a7f3d0" font-size="9" text-anchor="middle">Target Container</text>
+
+            <rect x="575" y="137" width="140" height="50" rx="6" fill="#064e3b" />
+            <text x="645" y="155" fill="#f1f5f9" font-size="10" text-anchor="middle">Real Painted Elements:</text>
+            <text x="645" y="172" fill="#6ee7b7" font-size="10" font-family="monospace" text-anchor="middle">&lt;div&gt;, &lt;h1&gt;, &lt;button&gt;</text>
+          </svg>
+          <span class="visual-caption">Figure 4: The 3-Step Journey from React Virtual Code to Browser Pixels</span>
+        </div>
+
+        <!-- 3 Key Takeaways Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan);">
+            <strong style="color: var(--accent-cyan); font-size: 1rem;">1. React vs. ReactDOM</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              <code>React</code> is platform-independent logic (components &amp; state). <code>ReactDOM</code> is the browser specialist that knows how to create and update actual HTML DOM elements.
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue);">
+            <strong style="color: var(--accent-blue); font-size: 1rem;">2. Why the <code>/client</code> Path?</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              In React 18, client-side rendering was separated into <code>react-dom/client</code> to provide modern Concurrent rendering via <code>createRoot()</code> (replacing the legacy <code>ReactDOM.render</code>).
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+            <strong style="color: var(--accent-emerald); font-size: 1rem;">3. What <code>createRoot()</code> Does</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Grabs <code>&lt;div id="root"&gt;&lt;/div&gt;</code> from <code>index.html</code>, hands full control over to React, and renders your entire component hierarchy inside it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: import { App } from './app/App'; (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-5">
+      <div class="card-header-clickable" onclick="toggleSection('section-5')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">🏰</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-purple);">5. What Does <code style="color: #fff;">import { App } from './app/App';</code> Mean?</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Line 5 of <code>frontend/src/main.tsx</code> · The Story of the Gatekeeper &amp; The Master Castle</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <!-- The Story Box -->
+        <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 1.75rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--accent-purple); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            📖 The Story of the Gatekeeper &amp; The Master Castle
+          </h3>
+          <p style="color: var(--text-main); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">
+            Imagine your web application is an ancient royal kingdom:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-muted); padding-left: 0.5rem;">
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🚪</span>
+              <span><strong style="color: #fff;">The City Gatekeeper (<code style="color: var(--accent-gold);">main.tsx</code>):</strong> Standing guard at the city gates (<code style="color: #93c5fd;">&lt;div id="root"&gt;</code> in <code>index.html</code>). The Gatekeeper has the magic construction hammer (<code style="color: var(--accent-cyan);">ReactDOM</code>), but he doesn't know how to design rooms or furniture!</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🏰</span>
+              <span><strong style="color: #fff;">The Master Castle (<code style="color: var(--accent-purple);">App.tsx</code>):</strong> Deep inside the royal workshop (<code style="color: #a78bfa;">./app/App.tsx</code>), master artisans built an entire self-contained Castle called <strong>App</strong>. Inside this castle sits the Watchtower (<code style="color: #6ee7b7;">&lt;Navbar /&gt;</code>), the Grand Halls (<code style="color: #6ee7b7;">&lt;HomePage /&gt;</code>, <code style="color: #6ee7b7;">&lt;SearchPage /&gt;</code>), and the Treasure Vault (<code style="color: #6ee7b7;">&lt;CartDrawer /&gt;</code>).</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🚚</span>
+              <span><strong style="color: #fff;">The Delivery Order (<code style="color: var(--accent-purple);">import { App } from './app/App';</code>):</strong> The Gatekeeper dials the workshop and says: <em>"Deliver the Master Castle <strong>App</strong> to the front gates right now!"</em></span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">✨</span>
+              <span><strong style="color: #fff;">The Grand Opening (<code style="color: var(--accent-cyan);">.render(&lt;App /&gt;)</code>):</strong> The Gatekeeper plants the Castle right onto the foundation (<code style="color: #93c5fd;">#root</code>). Instantly, the entire kingdom comes alive for visitors in their web browser!</span>
+            </li>
+          </ul>
+        </div>
+
+        <pre><code><span class="token-keyword">import</span> { <span class="token-var">App</span> } <span class="token-keyword">from</span> <span class="token-str">'./app/App'</span>;
+<span class="token-comment">//      └──┬──┘        └───┬───┘</span>
+<span class="token-comment">//         │               └── Relative path to file (src/app/App.tsx)</span>
+<span class="token-comment">//         └────────────────── Named import: Grab the specific exported 'App' component</span></code></pre>
+
+        <!-- SVG Drawing for Section 5: The Component Tree -->
+        <div class="visual-canvas">
+          <svg width="100%" height="280" viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Level 1: main.tsx & root -->
+            <rect x="230" y="15" width="300" height="48" rx="10" fill="#1e1b4b" stroke="#818cf8" stroke-width="2" />
+            <text x="380" y="36" fill="#c7d2fe" font-weight="700" font-size="13" text-anchor="middle">🚀 main.tsx (Mounts into &lt;div id="root"&gt;)</text>
+            <text x="380" y="52" fill="#a5b4fc" font-size="10" text-anchor="middle">ReactDOM.createRoot().render(&lt;App /&gt;)</text>
+
+            <!-- Connector Down -->
+            <line x1="380" y1="63" x2="380" y2="90" stroke="#a855f7" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="380,95 375,85 385,85" fill="#a855f7" />
+
+            <!-- Level 2: App.tsx (Root Component) -->
+            <rect x="200" y="95" width="360" height="52" rx="12" fill="#3b0764" stroke="#a855f7" stroke-width="2" />
+            <text x="380" y="118" fill="#f5d0fe" font-weight="800" font-size="15" text-anchor="middle">🏰 &lt;App /&gt; (Root Component)</text>
+            <text x="380" y="136" fill="#e9d5ff" font-size="11" text-anchor="middle">State: cart, isCartOpen · Routes · Event Handlers</text>
+
+            <!-- Connector Lines to Children -->
+            <line x1="380" y1="147" x2="380" y2="175" stroke="#a855f7" stroke-width="2" />
+            <line x1="110" y1="175" x2="650" y2="175" stroke="#a855f7" stroke-width="2" />
+            
+            <line x1="110" y1="175" x2="110" y2="195" stroke="#a855f7" stroke-width="2" />
+            <line x1="290" y1="175" x2="290" y2="195" stroke="#a855f7" stroke-width="2" />
+            <line x1="470" y1="175" x2="470" y2="195" stroke="#a855f7" stroke-width="2" />
+            <line x1="650" y1="175" x2="650" y2="195" stroke="#a855f7" stroke-width="2" />
+
+            <!-- Child 1: Navbar -->
+            <rect x="30" y="195" width="160" height="65" rx="8" fill="#131720" stroke="#f59e0b" stroke-width="1.5" />
+            <text x="110" y="218" fill="#fcd34d" font-weight="700" font-size="12" text-anchor="middle">🧭 &lt;Navbar /&gt;</text>
+            <text x="110" y="235" fill="#94a3b8" font-size="10" text-anchor="middle">Logo, Navigation Links,</text>
+            <text x="110" y="249" fill="#94a3b8" font-size="10" text-anchor="middle">Cart Item Counter Badge</text>
+
+            <!-- Child 2: Routes -->
+            <rect x="210" y="195" width="160" height="65" rx="8" fill="#131720" stroke="#06b6d4" stroke-width="1.5" />
+            <text x="290" y="218" fill="#67e8f9" font-weight="700" font-size="12" text-anchor="middle">🗺️ &lt;Routes&gt;</text>
+            <text x="290" y="235" fill="#94a3b8" font-size="10" text-anchor="middle">/ (Home), /search,</text>
+            <text x="290" y="249" fill="#94a3b8" font-size="10" text-anchor="middle">/product/:slug, /orders</text>
+
+            <!-- Child 3: Footer -->
+            <rect x="390" y="195" width="160" height="65" rx="8" fill="#131720" stroke="#10b981" stroke-width="1.5" />
+            <text x="470" y="218" fill="#6ee7b7" font-weight="700" font-size="12" text-anchor="middle">🛡️ &lt;Footer /&gt;</text>
+            <text x="470" y="235" fill="#94a3b8" font-size="10" text-anchor="middle">Value Propositions,</text>
+            <text x="470" y="249" fill="#94a3b8" font-size="10" text-anchor="middle">Brand links &amp; copyright</text>
+
+            <!-- Child 4: CartDrawer -->
+            <rect x="570" y="195" width="160" height="65" rx="8" fill="#131720" stroke="#f43f5e" stroke-width="1.5" />
+            <text x="650" y="218" fill="#fda4af" font-weight="700" font-size="12" text-anchor="middle">🛍️ &lt;CartDrawer /&gt;</text>
+            <text x="650" y="235" fill="#94a3b8" font-size="10" text-anchor="middle">Slide-over shopping cart,</text>
+            <text x="650" y="249" fill="#94a3b8" font-size="10" text-anchor="middle">quantity &amp; checkout CTA</text>
+          </svg>
+          <span class="visual-caption">Figure 5: The Component Tree — App is the Single Mother Ship</span>
+        </div>
+
+        <!-- 3 Pillars Breakdown -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-purple);">
+            <strong style="color: var(--accent-purple); font-size: 1rem;">1. Why Curly Braces { App }?</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              In <code>App.tsx</code>, the code writes <code>export const App = ...</code> (a <strong>named export</strong>). In JavaScript, named exports require curly brackets <code>{ App }</code> so the bundler knows exactly which piece you are asking for.
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+            <strong style="color: var(--accent-gold); font-size: 1rem;">2. What Does './app/App' Mean?</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              <code>./</code> means "start right here in <code>src/</code>", then open the <code>app/</code> folder, and load <code>App.tsx</code>. You don't need to write the <code>.tsx</code> extension because Vite resolves it automatically!
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+            <strong style="color: var(--accent-emerald); font-size: 1rem;">3. Why Not Put Everything in main.tsx?</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Clean Architecture! <code>main.tsx</code> stays tiny and clean (the ignition switch). <code>App.tsx</code> holds your layouts, routers, and application logic.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: import './index.css'; (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-6">
+      <div class="card-header-clickable" onclick="toggleSection('section-6')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">🎨</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-gold);">6. What Does <code style="color: #fff;">import './index.css';</code> Do?</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Line 6 of <code>frontend/src/main.tsx</code> · The Story of the Royal Tailor &amp; Global Design System</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <!-- The Story Box -->
+        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.75rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--accent-gold); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            👔 The Story of the Royal Tailor &amp; The Naked Castle
+          </h3>
+          <p style="color: var(--text-main); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">
+            When the builders assemble the Castle (<code style="color: var(--accent-purple);">&lt;App /&gt;</code>), it starts out completely naked:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-muted); padding-left: 0.5rem;">
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🧱</span>
+              <span><strong style="color: #fff;">The Naked Framework:</strong> Without styles, the browser renders raw black text on a blinding white background, ugly default blue underlined links, and clunky unstyled square buttons.</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🧵</span>
+              <span><strong style="color: #fff;">Calling the Royal Tailor (<code style="color: var(--accent-gold);">import './index.css';</code>):</strong> The Gatekeeper immediately calls the Royal Tailor. The tailor arrives with rich obsidian fabrics (<code style="color: #cbd5e1;">--bg-primary: #0d0f12</code>), warm gilded gold embroidery (<code style="color: var(--accent-gold);">--accent-gold: #e2b170</code>), and bespoke typography (<code style="color: #93c5fd;">Plus Jakarta Sans &amp; Playfair Display</code>).</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">👑</span>
+              <span><strong style="color: #fff;">The Side-Effect Draping:</strong> Notice there is no variable name (we didn't write <code>import styles from ...</code>). This is a <strong>Side-Effect Import</strong>! It tells the Vite bundler: <em>"Inject this royal stylesheet directly into the browser's head so every single component automatically wears the luxury theme."</em></span>
+            </li>
+          </ul>
+        </div>
+
+        <pre><code><span class="token-keyword">import</span> <span class="token-str">'./index.css'</span>;
+<span class="token-comment">// └──┬──┘ └─────┬─────┘</span>
+<span class="token-comment">//    │          └─ Relative path to the global master stylesheet (src/index.css)</span>
+<span class="token-comment">//    └──────────── Side-effect import: Injects global tokens, reset, &amp; dark theme</span></code></pre>
+
+        <!-- SVG Drawing for Section 6 -->
+        <div class="visual-canvas">
+          <svg width="100%" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Phase 1: Unstyled -->
+            <rect x="30" y="30" width="190" height="175" rx="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2" />
+            <text x="125" y="60" fill="#0f172a" font-weight="700" font-size="13" text-anchor="middle">❌ WITHOUT index.css</text>
+            
+            <rect x="45" y="80" width="160" height="30" fill="#f1f5f9" stroke="#cbd5e1" />
+            <text x="125" y="100" fill="#2563eb" font-size="11" text-decoration="underline" text-anchor="middle">Raw Blue Link</text>
+
+            <rect x="45" y="120" width="160" height="30" fill="#e2e8f0" stroke="#94a3b8" />
+            <text x="125" y="140" fill="#000" font-size="11" text-anchor="middle">Boring Grey Button</text>
+            <text x="125" y="180" fill="#64748b" font-size="10" font-style="italic" text-anchor="middle">Default Times New Roman</text>
+
+            <!-- Arrow 1 -->
+            <path d="M 230 118 L 280 118" stroke="#f59e0b" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="280,118 272,112 272,124" fill="#f59e0b" />
+
+            <!-- Phase 2: index.css Engine -->
+            <rect x="285" y="25" width="210" height="185" rx="14" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2" />
+            <text x="390" y="55" fill="#f59e0b" font-weight="700" font-size="14" text-anchor="middle">🧵 THE ROYAL TAILOR</text>
+            <text x="390" y="75" fill="#e0e7ff" font-family="monospace" font-size="12" font-weight="600" text-anchor="middle">import './index.css';</text>
+            
+            <rect x="300" y="90" width="180" height="32" rx="6" fill="#312e81" />
+            <text x="390" y="110" fill="#fcd34d" font-size="10" font-family="monospace" text-anchor="middle">--accent-gold: #e2b170</text>
+
+            <rect x="300" y="128" width="180" height="32" rx="6" fill="#312e81" />
+            <text x="390" y="148" fill="#93c5fd" font-size="10" font-family="monospace" text-anchor="middle">--bg-primary: #0d0f12</text>
+
+            <text x="390" y="185" fill="#c7d2fe" font-size="10" text-anchor="middle">Vite Bundles &amp; Injects into &lt;head&gt;</text>
+
+            <!-- Arrow 2 -->
+            <path d="M 505 118 L 555 118" stroke="#10b981" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="555,118 547,112 547,124" fill="#10b981" />
+
+            <!-- Phase 3: Luxury Atelier -->
+            <rect x="560" y="30" width="170" height="175" rx="12" fill="#0d0f12" stroke="#e2b170" stroke-width="2" />
+            <text x="645" y="58" fill="#e2b170" font-weight="700" font-size="13" text-anchor="middle">✨ WITH index.css</text>
+            
+            <rect x="575" y="75" width="140" height="32" rx="6" fill="#14171d" stroke="rgba(255,255,255,0.1)" />
+            <text x="645" y="95" fill="#f8fafc" font-size="10" font-weight="600" text-anchor="middle">Modern Dark Luxury</text>
+
+            <rect x="575" y="115" width="140" height="32" rx="99" fill="#e2b170" />
+            <text x="645" y="135" fill="#000" font-size="10" font-weight="700" text-anchor="middle">Glow Gold Button</text>
+            <text x="645" y="175" fill="#94a3b8" font-size="10" font-family="serif" text-anchor="middle">Plus Jakarta Sans &amp; Serif</text>
+          </svg>
+          <span class="visual-caption">Figure 6: The Transformation from Raw Elements to Luxury Dark Aesthetics</span>
+        </div>
+
+        <!-- 3 Pillars of index.css -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+            <strong style="color: var(--accent-gold); font-size: 1rem;">1. Side-Effect Import</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Notice there is no variable name (no <code>from</code>). This is called a <strong>side-effect import</strong>. It executes the file immediately to inject global styles without exporting JS functions.
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan);">
+            <strong style="color: var(--accent-cyan); font-size: 1rem;">2. Design Tokens in :root</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Defines the global color palette (<code>--bg-primary</code>, <code>--accent-gold</code>, <code>--radius-md</code>). Any component anywhere in the app can use these variables instantly.
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+            <strong style="color: var(--accent-emerald); font-size: 1rem;">3. Global CSS Reset</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Zeroes out default browser margins, sets <code>box-sizing: border-box</code>, and configures smooth fonts so your layout behaves identically across Safari, Chrome, and Firefox.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: ReactDOM.createRoot(...).render(...) (COLLAPSIBLE) -->
+    <section class="card is-collapsed" id="section-7">
+      <div class="card-header-clickable" onclick="toggleSection('section-7')">
+        <div class="card-header-left">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">🚀</div>
+          <div>
+            <h2 class="card-title" style="color: var(--accent-emerald);">7. The Grand Launchpad: <code style="color: #fff;">createRoot(...).render(...)</code></h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Lines 8–12 of <code>frontend/src/main.tsx</code> · The Foundation, The Safety Inspector &amp; Power Switch</p>
+          </div>
+        </div>
+        <div class="expand-badge">
+          <span class="badge-text">Expand Details</span>
+          <span class="expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Body -->
+      <div class="collapsible-body">
+        <!-- The Story Box -->
+        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.75rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--accent-emerald); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            ⚡ The Story of the Foundation, Safety Inspector &amp; Power Switch
+          </h3>
+          <p style="color: var(--text-main); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">
+            This 5-line block is the entire <strong>ignition engine</strong> of the web application:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-muted); padding-left: 0.5rem;">
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">📍</span>
+              <span><strong style="color: #fff;">1. Finding the Land (<code style="color: var(--accent-cyan);">document.getElementById('root')</code>):</strong> The browser searches through <code>index.html</code> to locate the single empty container: <code>&lt;div id="root"&gt;&lt;/div&gt;</code>.</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">📜</span>
+              <span><strong style="color: #fff;">2. The Deed Guarantee (<code style="color: var(--accent-gold);">as HTMLElement</code>):</strong> TypeScript panics when looking for elements because it worries: <em>"What if the element isn't found and is null?"</em> By writing <code>as HTMLElement</code>, you sign a guarantee: <em>"Trust me, this element 100% exists in index.html!"</em></span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🏗️</span>
+              <span><strong style="color: #fff;">3. Pouring the Concrete (<code style="color: var(--accent-emerald);">createRoot(...)</code>):</strong> Hands the empty <code>div</code> over to React 18, setting up the new high-performance Concurrent engine and Fiber tree scheduler.</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">🛡️</span>
+              <span><strong style="color: #fff;">4. The Safety Inspector (<code style="color: var(--accent-rose);">&lt;React.StrictMode&gt;</code>):</strong> Before allowing the public in, a strict building inspector double-checks all doors and wires. In development, it purposely runs effects twice to catch memory leaks, bad cleanup functions, and obsolete code!</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span style="font-size: 1.2rem;">💡</span>
+              <span><strong style="color: #fff;">5. Flipping the Master Switch (<code style="color: var(--accent-purple);">.render(&lt;App /&gt;)</code>):</strong> Powers up the Master Castle (<code style="color: #c084fc;">&lt;App /&gt;</code>) and illuminates the entire user interface!</span>
+            </li>
+          </ul>
+        </div>
+
+        <pre><code><span class="token-var">ReactDOM</span>.<span class="token-func">createRoot</span>(
+  document.<span class="token-func">getElementById</span>(<span class="token-str">'root'</span>) <span class="token-keyword">as</span> <span class="token-var">HTMLElement</span>
+).<span class="token-func">render</span>(
+  <span class="token-tag">&lt;React.StrictMode&gt;</span>
+    <span class="token-tag">&lt;App /&gt;</span>
+  <span class="token-tag">&lt;/React.StrictMode&gt;</span>
+);</code></pre>
+
+        <!-- SVG Drawing for Section 7 -->
+        <div class="visual-canvas">
+          <svg width="100%" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Step 1 -->
+            <rect x="20" y="30" width="160" height="175" rx="12" fill="#0f172a" stroke="#06b6d4" stroke-width="2" />
+            <text x="100" y="58" fill="#38bdf8" font-weight="700" font-size="12" text-anchor="middle">STEP 1: FIND</text>
+            <rect x="35" y="75" width="130" height="36" rx="6" fill="#1e293b" />
+            <text x="100" y="98" fill="#e2e8f0" font-size="11" font-family="monospace" text-anchor="middle">#root &lt;div&gt;</text>
+            <text x="100" y="145" fill="#94a3b8" font-size="10" text-anchor="middle">HTML container in</text>
+            <text x="100" y="160" fill="#94a3b8" font-size="10" text-anchor="middle">index.html</text>
+            <text x="100" y="188" fill="#fcd34d" font-size="10" font-weight="600" text-anchor="middle">as HTMLElement</text>
+
+            <!-- Arrow 1 -->
+            <path d="M 190 118 L 220 118" stroke="#10b981" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="220,118 212,112 212,124" fill="#10b981" />
+
+            <!-- Step 2 -->
+            <rect x="225" y="30" width="160" height="175" rx="12" fill="#062e24" stroke="#10b981" stroke-width="2" />
+            <text x="305" y="58" fill="#34d399" font-weight="700" font-size="12" text-anchor="middle">STEP 2: CREATE</text>
+            <rect x="240" y="75" width="130" height="36" rx="6" fill="#064e3b" />
+            <text x="305" y="98" fill="#a7f3d0" font-size="11" font-family="monospace" text-anchor="middle">createRoot()</text>
+            <text x="305" y="145" fill="#a7f3d0" font-size="10" text-anchor="middle">Initializes React 18</text>
+            <text x="305" y="160" fill="#a7f3d0" font-size="10" text-anchor="middle">Concurrent Engine</text>
+            <text x="305" y="188" fill="#6ee7b7" font-size="10" font-weight="600" text-anchor="middle">Fibers &amp; Scheduler</text>
+
+            <!-- Arrow 2 -->
+            <path d="M 395 118 L 425 118" stroke="#f43f5e" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="425,118 417,112 417,124" fill="#f43f5e" />
+
+            <!-- Step 3 -->
+            <rect x="430" y="30" width="150" height="175" rx="12" fill="#4c0519" stroke="#f43f5e" stroke-width="2" />
+            <text x="505" y="58" fill="#fda4af" font-weight="700" font-size="12" text-anchor="middle">STEP 3: GUARD</text>
+            <rect x="442" y="75" width="126" height="36" rx="6" fill="#881337" />
+            <text x="505" y="98" fill="#ffe4e6" font-size="10" font-family="monospace" text-anchor="middle">&lt;StrictMode&gt;</text>
+            <text x="505" y="145" fill="#fecdd3" font-size="10" text-anchor="middle">Dev Safety Check</text>
+            <text x="505" y="160" fill="#fecdd3" font-size="10" text-anchor="middle">Double-renders effects</text>
+            <text x="505" y="188" fill="#fda4af" font-size="10" font-weight="600" text-anchor="middle">Catches memory leaks</text>
+
+            <!-- Arrow 3 -->
+            <path d="M 590 118 L 620 118" stroke="#a855f7" stroke-width="3" stroke-dasharray="4,4" />
+            <polygon points="620,118 612,112 612,124" fill="#a855f7" />
+
+            <!-- Step 4 -->
+            <rect x="625" y="30" width="115" height="175" rx="12" fill="#2e1065" stroke="#a855f7" stroke-width="2" />
+            <text x="682" y="58" fill="#d8b4fe" font-weight="700" font-size="12" text-anchor="middle">STEP 4: LIVE</text>
+            <rect x="635" y="75" width="95" height="36" rx="6" fill="#581c87" />
+            <text x="682" y="98" fill="#f3e8ff" font-size="11" font-family="monospace" text-anchor="middle">.render()</text>
+            <text x="682" y="145" fill="#e9d5ff" font-size="10" text-anchor="middle">Mounts &lt;App /&gt;</text>
+            <text x="682" y="160" fill="#e9d5ff" font-size="10" text-anchor="middle">Interactive UI</text>
+            <text x="682" y="188" fill="#c084fc" font-size="10" font-weight="600" text-anchor="middle">E-Shop Running!</text>
+          </svg>
+          <span class="visual-caption">Figure 7: The 4-Step Ignition Pipeline from #root to Live E-Shop</span>
+        </div>
+
+        <!-- 3 Pillars Breakdown -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+            <strong style="color: var(--accent-emerald); font-size: 1rem;">1. React 18 Concurrent Root</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              <code>createRoot()</code> replaces the legacy <code>ReactDOM.render()</code>. It allows React to pause, resume, and prioritize renders so complex UI interactions remain silky smooth.
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-rose);">
+            <strong style="color: var(--accent-rose); font-size: 1rem;">2. Why StrictMode Runs Twice</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              If you see a <code>console.log()</code> print twice in your dev tools, that is <code>&lt;React.StrictMode&gt;</code> doing its job! It intentionally mounts twice in dev mode to verify your cleanup logic works. In production, it only runs once!
+            </p>
+          </div>
+
+          <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+            <strong style="color: var(--accent-gold); font-size: 1rem;">3. TypeScript "as HTMLElement"</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+              Standard JavaScript DOM lookups can return <code>null</code>. The type assertion tells TypeScript to treat the result strictly as a non-null HTML element, keeping your build clean of null checks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+      </div> <!-- End chapter-collapsible-body -->
+    </section> <!-- End chapter-master-card (Chapter 1) -->
+
+    <!-- ========================================================================= -->
+    <!-- CHAPTER 2: App.tsx — MASTER CASTLE & COORDINATOR (COLLAPSIBLE)            -->
+    <!-- ========================================================================= -->
+    <section class="chapter-master-card is-collapsed" id="chapter-2" style="border-color: rgba(168, 85, 247, 0.4);">
+      <div class="chapter-header-clickable" onclick="toggleChapter('chapter-2')">
+        <div class="chapter-header-left">
+          <div class="chapter-tag" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.3);">
+            🏰 CHAPTER 2 · APPLICATION MASTER COMPONENT
+          </div>
+          <h2 class="chapter-title">App.tsx — Complete Architectural Breakdown (9 Points)</h2>
+          <p class="chapter-subtitle">
+            All 86 lines of <code>frontend/src/app/App.tsx</code> · State, Routing, GraphQL Synchronization &amp; Layout
+          </p>
+        </div>
+        <div class="chapter-expand-badge" style="border-color: var(--accent-purple); color: var(--accent-purple);">
+          <span class="chapter-badge-text">Expand Chapter 2 (9 Points)</span>
+          <span class="chapter-expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- CHAPTER 2 COLLAPSIBLE BODY -->
+      <div class="chapter-collapsible-body">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          <code>App.tsx</code> is the central nervous system of StyleHome. Click any line in the code navigator below or click any of the 9 breakdown cards to view its story, definition, and diagram!
+        </p>
+
+        <!-- Interactive Line-by-Line Code Navigator for App.tsx -->
+        <div class="code-navigator" style="margin-bottom: 2rem;">
+          <div class="nav-line" onclick="openAndScrollTo('app-section-1', 'chapter-2')">
+            <span class="ln">1</span>
+            <code><span class="token-keyword">import</span> <span class="token-var">React</span>, { <span class="token-var">useState</span>, <span class="token-var">useEffect</span> } <span class="token-keyword">from</span> <span class="token-str">'react'</span>;</code>
+            <span class="jump-pill pill-gold">Line 1 ➔ Point 2.1: The Three Sorcerers</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-2', 'chapter-2')">
+            <span class="ln">2</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">BrowserRouter</span>, <span class="token-var">Routes</span>, <span class="token-var">Route</span> } <span class="token-keyword">from</span> <span class="token-str">'react-router-dom'</span>;</code>
+            <span class="jump-pill pill-cyan">Line 2 ➔ Point 2.2: The Grand Railway</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-3', 'chapter-2')">
+            <span class="ln">3-10</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">Navbar</span>, <span class="token-var">Footer</span>, <span class="token-var">HomePage</span>, ... } <span class="token-keyword">from</span> ...;</code>
+            <span class="jump-pill pill-purple">Lines 3–10 ➔ Point 2.3: 8 Wings of the Castle</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-4', 'chapter-2')">
+            <span class="ln">11</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">api</span>, <span class="token-var">Cart</span> } <span class="token-keyword">from</span> <span class="token-str">'../services/graphqlClient'</span>;</code>
+            <span class="jump-pill pill-emerald">Line 11 ➔ Point 2.4: Diplomatic Courier</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-5', 'chapter-2')">
+            <span class="ln">13</span>
+            <code><span class="token-keyword">export const</span> <span class="token-var">App</span>: <span class="token-var">React.FC</span> = () =&gt; {</code>
+            <span class="jump-pill pill-gold">Line 13 ➔ Point 2.5: Coronation of App</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-6', 'chapter-2')">
+            <span class="ln">14-15</span>
+            <code><span class="token-keyword">const</span> [<span class="token-var">cart</span>, <span class="token-var">setCart</span>] = <span class="token-func">useState</span>&lt;<span class="token-var">Cart</span> | <span class="token-keyword">null</span>&gt;(<span class="token-keyword">null</span>); ...</code>
+            <span class="jump-pill pill-cyan">Lines 14–15 ➔ Point 2.6: The State Vaults</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-7', 'chapter-2')">
+            <span class="ln">17-28</span>
+            <code><span class="token-keyword">const</span> <span class="token-func">refreshCart</span> = <span class="token-keyword">async</span> () =&gt; { ... }; <span class="token-func">useEffect</span>(...);</code>
+            <span class="jump-pill pill-emerald">Lines 17–28 ➔ Point 2.7: The Morning Bell</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-8', 'chapter-2')">
+            <span class="ln">30-56</span>
+            <code><span class="token-keyword">const</span> <span class="token-func">handleAddToCart</span>, <span class="token-func">handleUpdateQuantity</span>, <span class="token-func">handleApplyCoupon</span> ...</code>
+            <span class="jump-pill pill-rose">Lines 30–56 ➔ Point 2.8: The 3 Store Clerks</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('app-section-9', 'chapter-2')">
+            <span class="ln">58-85</span>
+            <code><span class="token-keyword">return</span> (<span class="token-tag">&lt;BrowserRouter&gt;&lt;Navbar /&gt;&lt;Routes&gt;...&lt;/BrowserRouter&gt;</span>);</code>
+            <span class="jump-pill pill-purple">Lines 58–85 ➔ Point 2.9: Skyscraper Shell</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span style="font-size: 0.9rem; color: var(--accent-purple); font-weight: 600;">
+            👇 The 9 App.tsx Breakdown Points Below (Click any point to expand):
+          </span>
+          <button class="btn-toggle-all" id="btn-toggle-app">📂 Expand All 9 App Points</button>
+        </div>
+
+        <!-- POINT 2.1: import React, { useState, useEffect } from 'react'; -->
+        <section class="card is-collapsed" id="app-section-1">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-1')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">🧙‍♂️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-gold);">Point 2.1: Line 1 — The Three Sorcerers of React</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import React, { useState, useEffect } from 'react';</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-gold); margin-bottom: 0.5rem;">📖 The Story of the Three Sorcerers</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                When building the master application, one wizard is never enough. You summon three distinct sorcerers:
+                <br>• <strong>React (The Enchanter):</strong> Casts the master spell that transforms JavaScript functions into visual UI components.
+                <br>• <strong>useState (The Memory Keeper):</strong> A wizard with an enchanted notebook. Normal JavaScript variables vanish when a function finishes; <code>useState</code> remembers your cart items forever across renders!
+                <br>• <strong>useEffect (The Time Traveler):</strong> Sits on the watchtower, waiting for specific moments in time (like the store first opening) to trigger background side effects.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> <span class="token-var">React</span>, { <span class="token-var">useState</span>, <span class="token-var">useEffect</span> } <span class="token-keyword">from</span> <span class="token-str">'react'</span>;</code></pre>
+            <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold); margin-top: 1rem;">
+              <strong style="color: var(--accent-gold);">Key Definition:</strong>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">Combines the default <code>React</code> library object with <strong>named Hook imports</strong> inside curly brackets <code>{ ... }</code>.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 2.2: import { BrowserRouter, Routes, Route } from 'react-router-dom'; -->
+        <section class="card is-collapsed" id="app-section-2">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-2')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🚂</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-cyan);">Point 2.2: Line 2 — The Grand Railway &amp; Switch Tracks</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import { BrowserRouter, Routes, Route } from 'react-router-dom';</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">📖 The Story of the Grand Railway</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                In traditional 1990s websites, clicking a link forces the browser to destroy the page and reload everything from scratch. <code>react-router-dom</code> introduces the high-speed bullet train:
+                <br>• <strong>BrowserRouter:</strong> The Central Train Station that listens to the browser URL address bar.
+                <br>• <strong>Routes:</strong> The Railway Switch Operator. It inspects where the user wants to go.
+                <br>• <strong>Route:</strong> The destination platform (e.g. <code>path="/search"</code> ➔ departs passengers at <code>&lt;SearchPage /&gt;</code>).
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> { <span class="token-var">BrowserRouter</span>, <span class="token-var">Routes</span>, <span class="token-var">Route</span> } <span class="token-keyword">from</span> <span class="token-str">'react-router-dom'</span>;</code></pre>
+            <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); margin-top: 1rem;">
+              <strong style="color: var(--accent-cyan);">Key Definition:</strong>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">Enables <strong>Single Page Application (SPA) Client-Side Routing</strong> so pages swap instantly with zero browser flickering.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 2.3: Lines 3–10: Component & Page Imports -->
+        <section class="card is-collapsed" id="app-section-3">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-3')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">🏬</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-purple);">Point 2.3: Lines 3–10 — The 8 Wings of the Department Store</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Importing Layouts (Navbar, Footer, CartDrawer) and Features (HomePage, SearchPage...)</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">📖 The Story of the 8 Wings</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                A great department store is built of dedicated wings:
+                <br>• <strong>Navbar &amp; Footer (The Framing):</strong> The welcoming roof canopy and solid foundation pillars.
+                <br>• <strong>CartDrawer (The Floating Basket):</strong> Slides in from the right edge whenever a customer selects an item.
+                <br>• <strong>The Feature Halls:</strong> <code>HomePage</code> (the grand display window), <code>SearchPage</code> (the catalog library), <code>ProductDetailPage</code> (the artisan workshop), <code>CheckoutPage</code> (the cashier), and <code>OrdersPage</code> (the delivery tracking desk).
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> { <span class="token-var">Navbar</span> } <span class="token-keyword">from</span> <span class="token-str">'../components/layout/Navbar'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">Footer</span> } <span class="token-keyword">from</span> <span class="token-str">'../components/layout/Footer'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">CartDrawer</span> } <span class="token-keyword">from</span> <span class="token-str">'../components/cart/CartDrawer'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">HomePage</span> } <span class="token-keyword">from</span> <span class="token-str">'../features/home/HomePage'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">SearchPage</span> } <span class="token-keyword">from</span> <span class="token-str">'../features/search/SearchPage'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">ProductDetailPage</span> } <span class="token-keyword">from</span> <span class="token-str">'../features/catalog/ProductDetailPage'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">CheckoutPage</span> } <span class="token-keyword">from</span> <span class="token-str">'../features/checkout/CheckoutPage'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">OrdersPage</span> } <span class="token-keyword">from</span> <span class="token-str">'../features/orders/OrdersPage'</span>;</code></pre>
+            <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-purple); margin-top: 1rem;">
+              <strong style="color: var(--accent-purple);">Key Definition:</strong>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;"><strong>Feature-based architecture:</strong> Separates reusable layout components (in <code>components/</code>) from domain-specific business features (in <code>features/</code>).</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 2.4: Line 11: import { api, Cart } from '../services/graphqlClient'; -->
+        <section class="card is-collapsed" id="app-section-4">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-4')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">📡</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-emerald);">Point 2.4: Line 11 — The Diplomatic Courier to the GraphQL Embassy</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import { api, Cart } from '../services/graphqlClient';</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">📖 The Story of the Diplomatic Courier</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                Your React frontend needs to communicate with the Go backend microservices server running on port 8080:
+                <br>• <strong>api (The Diplomatic Courier):</strong> A pre-configured messenger with methods like <code>api.getCart()</code> and <code>api.addToCart()</code>. It packs requests into GraphQL queries and brings back live responses.
+                <br>• <strong>Cart (The Royal Treaty / Type Contract):</strong> A TypeScript <code>interface</code> that specifies exactly what a Cart object contains (items, total, discounts) to prevent runtime bugs.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> { <span class="token-var">api</span>, <span class="token-var">Cart</span> } <span class="token-keyword">from</span> <span class="token-str">'../services/graphqlClient'</span>;</code></pre>
+            <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald); margin-top: 1rem;">
+              <strong style="color: var(--accent-emerald);">Key Definition:</strong>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;"><strong>GraphQL BFF (Backend-For-Frontend) Client:</strong> Provides strictly-typed API requests to resolve Cart, Catalog, and Orders in a single network roundtrip.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 2.5: Line 13: export const App: React.FC = () => { -->
+        <section class="card is-collapsed" id="app-section-5">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-5')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">👑</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-gold);">Point 2.5: Line 13 — The Coronation of the Mother Ship Component</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>export const App: React.FC = () => {</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-gold); margin-bottom: 0.5rem;">📖 The Story of the Coronation</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                This line crowns the component as the Sovereign Ruler of the application:
+                <br>• <strong>export:</strong> Shares this component with the outside world (so <code>main.tsx</code> can import it!).
+                <br>• <strong>const App:</strong> Declares an immutable reference to our component function.
+                <br>• <strong>React.FC:</strong> The royal badge of honor ("Functional Component" type in TypeScript), enforcing that this function returns valid React elements.
+                <br>• <strong>() =&gt; &#123;:</strong> Modern arrow function syntax defining where the component logic lives.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">export const</span> <span class="token-var">App</span>: <span class="token-var">React.FC</span> = () =&gt; {</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 2.6: Lines 14–15: State Declarations -->
+        <section class="card is-collapsed" id="app-section-6">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-6')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🔐</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-cyan);">Point 2.6: Lines 14–15 — The State Vaults &amp; Pocket Door</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>const [cart, setCart] = useState... const [isCartOpen, setIsCartOpen] = useState...</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">📖 The Story of the Two Vaults</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                App holds two critical pieces of memory for the entire session:
+                <br>• <strong>Vault 1 (cart, setCart):</strong> Holds the user's shopping cart. It starts as <code>null</code> until the backend responds. When items are added, <code>setCart(updated)</code> alerts the UI to update the item badge and recalculate totals!
+                <br>• <strong>Vault 2 (isCartOpen, setIsCartOpen):</strong> A simple binary switch (<code>true</code> or <code>false</code>) controlling whether the slide-over cart drawer is visible or hidden.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">const</span> [<span class="token-var">cart</span>, <span class="token-func">setCart</span>] = <span class="token-func">useState</span>&lt;<span class="token-var">Cart</span> | <span class="token-keyword">null</span>&gt;(<span class="token-keyword">null</span>);
+<span class="token-keyword">const</span> [<span class="token-var">isCartOpen</span>, <span class="token-func">setIsCartOpen</span>] = <span class="token-func">useState</span>&lt;<span class="token-keyword">boolean</span>&gt;(<span class="token-keyword">false</span>);</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 2.7: Lines 17–28: Cart Synchronization & useEffect -->
+        <section class="card is-collapsed" id="app-section-7">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-7')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">🔔</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-emerald);">Point 2.7: Lines 17–28 — The Morning Bell &amp; Ledger Check</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>const refreshCart = async () => ... useEffect(() => { refreshCart(); }, []);</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">📖 The Story of the Morning Bell</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                When a customer visits StyleHome, their browser might already have existing cart items saved in cookies or Redis.
+                <br>• <strong>refreshCart():</strong> An asynchronous function that contacts the server (<code>await api.getCart()</code>) and updates the local state.
+                <br>• <strong>useEffect(..., []):</strong> The empty array <code>[]</code> tells React: <em>"Ring this bell exactly ONCE when the customer first walks through the door (component mounts), then never run it again on ordinary re-renders."</em>
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">const</span> <span class="token-func">refreshCart</span> = <span class="token-keyword">async</span> () =&gt; {
+  <span class="token-keyword">try</span> {
+    <span class="token-keyword">const</span> <span class="token-var">c</span> = <span class="token-keyword">await</span> <span class="token-var">api</span>.<span class="token-func">getCart</span>();
+    <span class="token-func">setCart</span>(<span class="token-var">c</span>);
+  } <span class="token-keyword">catch</span> (<span class="token-var">err</span>) {
+    console.<span class="token-func">error</span>(<span class="token-str">'Failed to sync cart:'</span>, <span class="token-var">err</span>);
+  }
+};
+
+<span class="token-func">useEffect</span>(() =&gt; {
+  <span class="token-func">refreshCart</span>();
+}, []); <span class="token-comment">// &lt;-- Empty array: Runs once on initial page load!</span></code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 2.8: Lines 30–56: The 3 Mutation Handlers -->
+        <section class="card is-collapsed" id="app-section-8">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-8')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose);">🛍️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-rose);">Point 2.8: Lines 30–56 — The Three Trusted Store Clerks</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>handleAddToCart</code>, <code>handleUpdateQuantity</code>, and <code>handleApplyCoupon</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-rose); margin-bottom: 0.5rem;">📖 The Story of the Three Clerks</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                When shoppers interact with products, three specialized clerks handle the action:
+                <br>• <strong>Clerk 1 (handleAddToCart):</strong> Adds the chosen item to the backend cart, updates <code>setCart(updated)</code>, and slides the cart drawer open (<code>setIsCartOpen(true)</code>) so the customer sees instant visual confirmation!
+                <br>• <strong>Clerk 2 (handleUpdateQuantity):</strong> Increases or decreases quantities (+ / -) or removes items when reduced to zero.
+                <br>• <strong>Clerk 3 (handleApplyCoupon):</strong> Validates promo codes with the pricing microservice. If valid, applies the discount; if expired or bogus, displays an alert dialog (<code>alert('Invalid coupon')</code>).
+              </p>
+            </div>
+            <pre><code><span class="token-comment">// Clerk 1: Add item and pop open the cart drawer</span>
+<span class="token-keyword">const</span> <span class="token-func">handleAddToCart</span> = <span class="token-keyword">async</span> (<span class="token-var">variantId</span>: <span class="token-keyword">string</span>, <span class="token-var">quantity</span>: <span class="token-keyword">number</span> = <span class="token-str">1</span>) =&gt; {
+  <span class="token-keyword">const</span> <span class="token-var">updated</span> = <span class="token-keyword">await</span> <span class="token-var">api</span>.<span class="token-func">addToCart</span>(<span class="token-var">variantId</span>, <span class="token-var">quantity</span>);
+  <span class="token-func">setCart</span>(<span class="token-var">updated</span>);
+  <span class="token-func">setIsCartOpen</span>(<span class="token-keyword">true</span>);
+};
+
+<span class="token-comment">// Clerk 2: Update item quantity</span>
+<span class="token-keyword">const</span> <span class="token-func">handleUpdateQuantity</span> = <span class="token-keyword">async</span> (<span class="token-var">cartItemId</span>: <span class="token-keyword">string</span>, <span class="token-var">quantity</span>: <span class="token-keyword">number</span>) =&gt; {
+  <span class="token-keyword">const</span> <span class="token-var">updated</span> = <span class="token-keyword">await</span> <span class="token-var">api</span>.<span class="token-func">updateCartItem</span>(<span class="token-var">cartItemId</span>, <span class="token-var">quantity</span>);
+  <span class="token-func">setCart</span>(<span class="token-var">updated</span>);
+};
+
+<span class="token-comment">// Clerk 3: Apply promotional discount</span>
+<span class="token-keyword">const</span> <span class="token-func">handleApplyCoupon</span> = <span class="token-keyword">async</span> (<span class="token-var">code</span>: <span class="token-keyword">string</span>) =&gt; {
+  <span class="token-keyword">try</span> {
+    <span class="token-keyword">const</span> <span class="token-var">updated</span> = <span class="token-keyword">await</span> <span class="token-var">api</span>.<span class="token-func">applyCoupon</span>(<span class="token-var">code</span>);
+    <span class="token-func">setCart</span>(<span class="token-var">updated</span>);
+  } <span class="token-keyword">catch</span> (<span class="token-var">err</span>: <span class="token-keyword">any</span>) {
+    <span class="token-func">alert</span>(<span class="token-var">err</span>.message || <span class="token-str">'Invalid coupon'</span>);
+  }
+};</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 2.9: Lines 58–85: Master JSX Layout & Routing -->
+        <section class="card is-collapsed" id="app-section-9">
+          <div class="card-header-clickable" onclick="toggleSection('app-section-9')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">🏛️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-purple);">Point 2.9: Lines 58–85 — The Glass Skyscraper Skeleton</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Full Page Architecture: Sticky Navbar, Flex 100vh, Dynamic Routes &amp; Slide-over Drawer</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">📖 The Story of the Glass Skyscraper</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                Notice how the JSX structure creates an unbreakable layout:
+                <br>• <code>minHeight: '100vh'</code> with <code>display: 'flex', flexDirection: 'column'</code> ensures the page always fills the screen, pushing the <code>&lt;Footer /&gt;</code> firmly to the bottom even on short pages!
+                <br>• <code>&lt;main style=&#123;&#123; flex: 1 &#125;&#125;&gt;</code> expands to absorb all available space.
+                <br>• <code>&lt;Routes&gt;</code> swaps in the active feature component based on the URL.
+                <br>• <code>&lt;CartDrawer /&gt;</code> stays mounted globally at the bottom of the tree, listening to <code>isOpen=&#123;isCartOpen&#125;</code> to slide smoothly into view.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">return</span> (
+  <span class="token-tag">&lt;BrowserRouter&gt;</span>
+    <span class="token-tag">&lt;div</span> <span class="token-keyword">style</span>={{ display: <span class="token-str">'flex'</span>, flexDirection: <span class="token-str">'column'</span>, minHeight: <span class="token-str">'100vh'</span> }}<span class="token-tag">&gt;</span>
+      <span class="token-tag">&lt;Navbar</span> <span class="token-var">cart</span>={cart} <span class="token-var">onOpenCart</span>={() =&gt; setIsCartOpen(<span class="token-keyword">true</span>)} <span class="token-tag">/&gt;</span>
+
+      <span class="token-tag">&lt;main</span> <span class="token-keyword">style</span>={{ flex: <span class="token-str">1</span> }}<span class="token-tag">&gt;</span>
+        <span class="token-tag">&lt;Routes&gt;</span>
+          <span class="token-tag">&lt;Route</span> <span class="token-var">path</span>=<span class="token-str">"/"</span> <span class="token-var">element</span>={<span class="token-tag">&lt;HomePage</span> <span class="token-var">onAddToCart</span>={handleAddToCart} <span class="token-tag">/&gt;</span>} <span class="token-tag">/&gt;</span>
+          <span class="token-tag">&lt;Route</span> <span class="token-var">path</span>=<span class="token-str">"/search"</span> <span class="token-var">element</span>={<span class="token-tag">&lt;SearchPage</span> <span class="token-var">onAddToCart</span>={handleAddToCart} <span class="token-tag">/&gt;</span>} <span class="token-tag">/&gt;</span>
+          <span class="token-tag">&lt;Route</span> <span class="token-var">path</span>=<span class="token-str">"/product/:slug"</span> <span class="token-var">element</span>={<span class="token-tag">&lt;ProductDetailPage</span> <span class="token-var">onAddToCart</span>={handleAddToCart} <span class="token-tag">/&gt;</span>} <span class="token-tag">/&gt;</span>
+          <span class="token-tag">&lt;Route</span> <span class="token-var">path</span>=<span class="token-str">"/checkout"</span> <span class="token-var">element</span>={<span class="token-tag">&lt;CheckoutPage</span> <span class="token-var">cart</span>={cart} <span class="token-var">onOrderSuccess</span>={refreshCart} <span class="token-tag">/&gt;</span>} <span class="token-tag">/&gt;</span>
+          <span class="token-tag">&lt;Route</span> <span class="token-var">path</span>=<span class="token-str">"/orders"</span> <span class="token-var">element</span>={<span class="token-tag">&lt;OrdersPage /&gt;</span>} <span class="token-tag">/&gt;</span>
+        <span class="token-tag">&lt;/Routes&gt;</span>
+      <span class="token-tag">&lt;/main&gt;</span>
+
+      <span class="token-tag">&lt;Footer /&gt;</span>
+
+      <span class="token-tag">&lt;CartDrawer</span>
+        <span class="token-var">isOpen</span>={isCartOpen}
+        <span class="token-var">onClose</span>={() =&gt; setIsCartOpen(<span class="token-keyword">false</span>)}
+        <span class="token-var">cart</span>={cart}
+        <span class="token-var">onUpdateQuantity</span>={handleUpdateQuantity}
+        <span class="token-var">onApplyCoupon</span>={handleApplyCoupon}
+      <span class="token-tag">/&gt;</span>
+    <span class="token-tag">&lt;/div&gt;</span>
+  <span class="token-tag">&lt;/BrowserRouter&gt;</span>
+);</code></pre>
+          </div>
+        </section>
+
+      </div> <!-- End Chapter 2 collapsible body -->
+    </section> <!-- End Chapter 2 master card -->
+
+    <!-- ========================================================================= -->
+    <!-- CHAPTER 3: Navbar.tsx — HEADER & NAVIGATION ENGINE (COLLAPSIBLE)          -->
+    <!-- ========================================================================= -->
+    <section class="chapter-master-card is-collapsed" id="chapter-3" style="border-color: rgba(6, 182, 212, 0.4);">
+      <div class="chapter-header-clickable" onclick="toggleChapter('chapter-3')">
+        <div class="chapter-header-left">
+          <div class="chapter-tag" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.3);">
+            🧭 CHAPTER 3 · APPLICATION HEADER &amp; NAVIGATION ENGINE
+          </div>
+          <h2 class="chapter-title">Navbar.tsx — Complete Architectural Breakdown (8 Points)</h2>
+          <p class="chapter-subtitle">
+            All 113 lines of <code>frontend/src/components/layout/Navbar.tsx</code> · Brand Identity, Client Routing, Lucide Icons, Props Contract &amp; Reactive Badge
+          </p>
+        </div>
+        <div class="chapter-expand-badge" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">
+          <span class="chapter-badge-text">Expand Chapter 3 (8 Points)</span>
+          <span class="chapter-expand-chevron">▼</span>
+        </div>
+      </div>
+
+      <!-- CHAPTER 3 COLLAPSIBLE BODY -->
+      <div class="chapter-collapsible-body">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          <code>Navbar.tsx</code> serves as the primary visual compass and gateway for the shopper. Click any line in the code navigator below or click any of the 8 breakdown cards to view its story, definition, and diagram!
+        </p>
+
+        <!-- Interactive Line-by-Line Code Navigator for Navbar.tsx -->
+        <div class="code-navigator" style="margin-bottom: 2rem;">
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-1', 'chapter-3')">
+            <span class="ln">1</span>
+            <code><span class="token-keyword">import</span> <span class="token-var">React</span> <span class="token-keyword">from</span> <span class="token-str">'react'</span>;</code>
+            <span class="jump-pill pill-gold">Line 1 ➔ Point 3.1: React Core Import</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-2', 'chapter-3')">
+            <span class="ln">2-3</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">Link</span>, <span class="token-var">useNavigate</span> } ... <span class="token-keyword">import</span> { <span class="token-var">ShoppingBag</span>... } <span class="token-keyword">from</span> <span class="token-str">'lucide-react'</span>;</code>
+            <span class="jump-pill pill-cyan">Lines 2–3 ➔ Point 3.2: SPA Router &amp; Lucide Icons</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-3', 'chapter-3')">
+            <span class="ln">4</span>
+            <code><span class="token-keyword">import</span> { <span class="token-var">Cart</span> } <span class="token-keyword">from</span> <span class="token-str">'../../services/graphqlClient'</span>;</code>
+            <span class="jump-pill pill-emerald">Line 4 ➔ Point 3.3: GraphQL Schema Contract</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-4', 'chapter-3')">
+            <span class="ln">6-9</span>
+            <code><span class="token-keyword">interface</span> <span class="token-var">NavbarProps</span> { <span class="token-var">cart</span>: <span class="token-var">Cart</span> | <span class="token-keyword">null</span>; <span class="token-func">onOpenCart</span>: () =&gt; <span class="token-keyword">void</span>; }</code>
+            <span class="jump-pill pill-purple">Lines 6–9 ➔ Point 3.4: TypeScript Props Contract</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-5', 'chapter-3')">
+            <span class="ln">11</span>
+            <code><span class="token-keyword">export const</span> <span class="token-var">Navbar</span>: <span class="token-var">React.FC</span>&lt;<span class="token-var">NavbarProps</span>&gt; = ({ <span class="token-var">cart</span>, <span class="token-var">onOpenCart</span> }) =&gt; {</code>
+            <span class="jump-pill pill-gold">Line 11 ➔ Point 3.5: Component Signature &amp; Destructuring</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-6', 'chapter-3')">
+            <span class="ln">12-13</span>
+            <code><span class="token-keyword">const</span> <span class="token-var">navigate</span> = <span class="token-func">useNavigate</span>(); <span class="token-keyword">const</span> <span class="token-var">totalItems</span> = <span class="token-var">cart</span>?.<span class="token-var">items</span>.<span class="token-func">reduce</span>(...) || <span class="token-str">0</span>;</code>
+            <span class="jump-pill pill-cyan">Lines 12–13 ➔ Point 3.6: Programmatic Nav &amp; Derived State</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-7', 'chapter-3')">
+            <span class="ln">15-40</span>
+            <code><span class="token-tag">&lt;header</span> <span class="token-keyword">className</span>=<span class="token-str">"glass-panel"</span> <span class="token-keyword">style</span>={{ position: <span class="token-str">'sticky'</span>... }}&gt; ... Logo ...</code>
+            <span class="jump-pill pill-purple">Lines 15–40 ➔ Point 3.7: Glassmorphism &amp; Atelier Logo</span>
+          </div>
+          <div class="nav-line" onclick="openAndScrollTo('nav-section-8', 'chapter-3')">
+            <span class="ln">42-111</span>
+            <code><span class="token-tag">&lt;nav&gt;</span>...<span class="token-tag">&lt;/nav&gt;</span> &amp; Action Hub (<span class="token-tag">&lt;Search /&gt;</span> + Cart Badge Counter)</code>
+            <span class="jump-pill pill-emerald">Lines 42–111 ➔ Point 3.8: Category Links &amp; Reactive Badge</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span style="font-size: 0.9rem; color: var(--accent-cyan); font-weight: 600;">
+            👇 The 8 Navbar.tsx Breakdown Points Below (Click any point to expand):
+          </span>
+          <button class="btn-toggle-all" id="btn-toggle-nav">📂 Expand All 8 Navbar Points</button>
+        </div>
+
+        <!-- POINT 3.1: import React from 'react'; -->
+        <section class="card is-collapsed" id="nav-section-1">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-1')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">⚛️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-gold);">Point 3.1: Line 1 — React Core Import &amp; The Presentational Child</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import React from 'react';</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-gold); margin-bottom: 0.5rem;">📖 The Story of the Dedicated Watchtower</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                Unlike <code>App.tsx</code> which summoned <code>useState</code> and <code>useEffect</code> to manage store inventories and timers, <code>Navbar.tsx</code> only needs <code>React</code> itself.
+                <br>• <strong>Presentational Component:</strong> Navbar doesn't fetch data or own the cart state directly. It is a sleek, high-speed sentinel that renders whatever the master component feeds it.
+                <br>• <strong>TypeScript Typing:</strong> Importing <code>React</code> provides access to <code>React.FC&lt;Props&gt;</code>, ensuring bulletproof type verification for all incoming props and child elements.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> <span class="token-var">React</span> <span class="token-keyword">from</span> <span class="token-str">'react'</span>;</code></pre>
+            <div style="padding: 1rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold); margin-top: 1rem;">
+              <strong style="color: var(--accent-gold);">Key Architectural Pattern:</strong>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;"><strong>Dumb/Presentational Pattern:</strong> By keeping <code>Navbar</code> free of direct backend queries, it stays lightweight, lightning-fast to render, and effortlessly testable.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 3.2: import { Link, useNavigate } & Lucide Icons -->
+        <section class="card is-collapsed" id="nav-section-2">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-2')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🚀</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-cyan);">Point 3.2: Lines 2–3 — Instant SPA Hyperlinks &amp; Featherweight Lucide Icons</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import { Link, useNavigate } from 'react-router-dom';</code> and Lucide icon imports</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">📖 The Story of the Two Wayfarers &amp; The Neon Emblems</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                How do users move around without reloading the page?
+                <br>• <strong>&lt;Link&gt; (Declarative Portal):</strong> Replaces archaic HTML <code>&lt;a href="..."&gt;</code> tags. Instead of demanding a new HTML document from the server, <code>Link</code> tells React Router to swap view components in under 5 milliseconds!
+                <br>• <strong>useNavigate (Programmatic Steering Wheel):</strong> A hook that returns a function: <code>navigate('/search')</code>. Perfect for buttons, forms, or automated redirects after user actions.
+                <br>• <strong>Lucide React Icons:</strong> Vector SVG icons (<code>ShoppingBag</code>, <code>Search</code>, <code>Compass</code>, <code>PackageCheck</code>) that scale crisply on 4K retina displays without blurry pixels.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> { <span class="token-var">Link</span>, <span class="token-var">useNavigate</span> } <span class="token-keyword">from</span> <span class="token-str">'react-router-dom'</span>;
+<span class="token-keyword">import</span> { <span class="token-var">ShoppingBag</span>, <span class="token-var">Search</span>, <span class="token-var">Compass</span>, <span class="token-var">PackageCheck</span>, <span class="token-var">User</span> } <span class="token-keyword">from</span> <span class="token-str">'lucide-react'</span>;</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 3.3: import { Cart } from '../../services/graphqlClient'; -->
+        <section class="card is-collapsed" id="nav-section-3">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-3')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">📜</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-emerald);">Point 3.3: Line 4 — The GraphQL Schema Contract &amp; Type Contract</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>import { Cart } from '../../services/graphqlClient';</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">📖 The Story of the Shared Blueprint</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                In loosely-typed projects, a developer might guess: <em>"Does the cart have `items` or `products`? Is it an array or an object?"</em> One typo crashes the app with <code>undefined is not an object</code>.
+                <br>• By importing the <strong>Cart type</strong> generated directly from the Go GraphQL BFF schema, TypeScript guarantees at compile time that <code>cart.items</code> exists and each item has a <code>quantity: number</code>.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">import</span> { <span class="token-var">Cart</span> } <span class="token-keyword">from</span> <span class="token-str">'../../services/graphqlClient'</span>;</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 3.4: interface NavbarProps -->
+        <section class="card is-collapsed" id="nav-section-4">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-4')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">🛡️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-purple);">Point 3.4: Lines 6–9 — The TypeScript Props Interface &amp; Unidirectional Data Flow</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>interface NavbarProps { cart: Cart | null; onOpenCart: () => void; }</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">📖 The Story of the Two-Way Covenant</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                <code>NavbarProps</code> is a legal treaty between <code>App.tsx</code> (the parent) and <code>Navbar.tsx</code> (the child):
+                <br>• <strong>cart: Cart | null:</strong> The parent passes down the shopping cart state. It is <code>null</code> during the first milliseconds while the Go BFF responds over the network.
+                <br>• <strong>onOpenCart: () =&gt; void:</strong> In React's <strong>Unidirectional Data Flow</strong>, a child cannot mutate its parent's state directly. Instead, the parent passes a callback button (a telephone hotline). When clicked, Navbar simply rings <code>onOpenCart()</code>, and <code>App.tsx</code> opens the drawer!
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">interface</span> <span class="token-var">NavbarProps</span> {
+  <span class="token-var">cart</span>: <span class="token-var">Cart</span> | <span class="token-keyword">null</span>;     <span class="token-comment">// Incoming Data (Read-only)</span>
+  <span class="token-func">onOpenCart</span>: () =&gt; <span class="token-keyword">void</span>; <span class="token-comment">// Outgoing Event Notification</span>
+}</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 3.5: export const Navbar: React.FC<NavbarProps> = ({ cart, onOpenCart }) => { -->
+        <section class="card is-collapsed" id="nav-section-5">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-5')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-gold);">👑</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-gold);">Point 3.5: Line 11 — Component Declaration &amp; Prop Destructuring</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>export const Navbar: React.FC&lt;NavbarProps&gt; = ({ cart, onOpenCart }) =&gt; {</code></p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-gold); margin-bottom: 0.5rem;">📖 The Anatomy of a Modern React Signature</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                Every symbol in this declaration carries strict meaning:
+                <br>• <strong>export:</strong> Shares the Navbar component with the entire application tree.
+                <br>• <strong>const Navbar:</strong> Creates an immutable constant holding the render function.
+                <br>• <strong>React.FC&lt;NavbarProps&gt;:</strong> Generic type binding. It instructs TypeScript that <code>props</code> must match <code>NavbarProps</code> precisely.
+                <br>• <strong>({ cart, onOpenCart }):</strong> JavaScript <strong>object destructuring</strong>. Instead of typing <code>props.cart</code> and <code>props.onOpenCart</code> everywhere, we extract them directly into local scope!
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">export const</span> <span class="token-var">Navbar</span>: <span class="token-var">React.FC</span>&lt;<span class="token-var">NavbarProps</span>&gt; = ({ <span class="token-var">cart</span>, <span class="token-var">onOpenCart</span> }) =&gt; {</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 3.6: useNavigate() and reduce() derived state -->
+        <section class="card is-collapsed" id="nav-section-6">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-6')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🧮</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-cyan);">Point 3.6: Lines 12–13 — Programmatic Navigation &amp; Derived State Calculation</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;"><code>const navigate = useNavigate();</code> and the Array.reduce() item counter</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">📖 The Story of the Abacus &amp; The Anti-Pattern Trap</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                Notice line 13 does <strong>NOT</strong> use <code>useState</code> to store <code>totalItems</code>!
+                <br>• <strong>The Anti-Pattern Trap:</strong> If you stored <code>totalItems</code> in its own <code>useState</code>, you would have to sync it with <code>useEffect</code> every time <code>cart</code> changed, causing duplicate renders and out-of-sync badge counts.
+                <br>• <strong>Derived State:</strong> Instead, calculate it on the fly during render!
+                <br>• <strong>cart?.items (Optional Chaining):</strong> Safely evaluates to <code>undefined</code> if <code>cart</code> is still <code>null</code>, preventing crashes.
+                <br>• <strong>.reduce((sum, it) =&gt; sum + it.quantity, 0):</strong> Loops over all cart items (e.g. 2 Oak Chairs + 1 Velvet Sofa = 3 total items).
+                <br>• <strong>|| 0:</strong> Fallback default to ensure <code>totalItems</code> is always a valid number.
+              </p>
+            </div>
+            <pre><code><span class="token-keyword">const</span> <span class="token-var">navigate</span> = <span class="token-func">useNavigate</span>();
+<span class="token-keyword">const</span> <span class="token-var">totalItems</span> = <span class="token-var">cart</span>?.<span class="token-var">items</span>.<span class="token-func">reduce</span>((<span class="token-var">sum</span>, <span class="token-var">it</span>) =&gt; <span class="token-var">sum</span> + <span class="token-var">it</span>.quantity, <span class="token-str">0</span>) || <span class="token-str">0</span>;</code></pre>
+          </div>
+        </section>
+
+        <!-- POINT 3.7: Lines 15–40: Glassmorphism Architecture & Atelier Brand Logo -->
+        <section class="card is-collapsed" id="nav-section-7">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-7')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">✨</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-purple);">Point 3.7: Lines 15–40 — The Glassmorphic Canopy &amp; Atelier Brand Identity</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Sticky positioning, <code>zIndex: 50</code>, luxury gold gradient &amp; editorial typography</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <!-- Visual SVG Diagram for Navbar Architecture -->
+            <div class="visual-canvas">
+              <svg width="100%" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer Glass Panel Header -->
+                <rect x="20" y="20" width="720" height="200" rx="14" fill="#0d1117" stroke="#06b6d4" stroke-width="2" />
+                <text x="380" y="45" fill="#38bdf8" font-weight="700" font-size="14" text-anchor="middle">👑 &lt;header className="glass-panel" style={{ position: 'sticky', top: 0, zIndex: 50 }}&gt;</text>
+                
+                <!-- Zone 1: Brand Logo -->
+                <rect x="40" y="70" width="190" height="125" rx="10" fill="#161b22" stroke="#f59e0b" stroke-width="1.5" />
+                <rect x="55" y="85" width="32" height="32" rx="6" fill="#f59e0b" />
+                <text x="71" y="107" fill="#000" font-weight="800" font-size="16" text-anchor="middle">S</text>
+                <text x="95" y="100" fill="#fff" font-family="serif" font-weight="700" font-size="15">StyleHome</text>
+                <text x="95" y="115" fill="#f59e0b" font-size="9" letter-spacing="1">ATELIER LIVING</text>
+                <text x="135" y="155" fill="#94a3b8" font-size="10" text-anchor="middle">&lt;Link to="/"&gt;</text>
+                <text x="135" y="172" fill="#6ee7b7" font-size="9" text-anchor="middle">Instant Home Return</text>
+
+                <!-- Zone 2: Navigation Links -->
+                <rect x="250" y="70" width="280" height="125" rx="10" fill="#161b22" stroke="#a855f7" stroke-width="1.5" />
+                <text x="390" y="95" fill="#c084fc" font-weight="700" font-size="12" text-anchor="middle">🧭 &lt;nav&gt; Semantic Rail</text>
+                <rect x="265" y="110" width="120" height="30" rx="6" fill="#1f2937" />
+                <text x="325" y="129" fill="#e2e8f0" font-size="10" text-anchor="middle">🧭 Explore Catalog</text>
+                <rect x="395" y="110" width="120" height="30" rx="6" fill="#1f2937" />
+                <text x="455" y="129" fill="#e2e8f0" font-size="10" text-anchor="middle">📦 My Orders</text>
+                <text x="390" y="165" fill="#94a3b8" font-size="10" text-anchor="middle">Faceted Categories: Living, Lighting, Workspace</text>
+                <text x="390" y="180" fill="#a78bfa" font-family="monospace" font-size="9" text-anchor="middle">/search?category=...</text>
+
+                <!-- Zone 3: Action Controls -->
+                <rect x="550" y="70" width="170" height="125" rx="10" fill="#161b22" stroke="#10b981" stroke-width="1.5" />
+                <circle cx="585" cy="115" r="18" fill="#1e293b" stroke="#475569" />
+                <text x="585" y="121" fill="#38bdf8" font-size="14" text-anchor="middle">🔍</text>
+                <rect x="615" y="98" width="90" height="34" rx="17" fill="#1e293b" stroke="#f59e0b" />
+                <text x="645" y="119" fill="#f59e0b" font-size="12">🛍️ Cart</text>
+                <circle cx="692" cy="115" r="9" fill="#f59e0b" />
+                <text x="692" y="119" fill="#000" font-weight="800" font-size="10" text-anchor="middle">3</text>
+                <text x="635" y="165" fill="#6ee7b7" font-size="10" text-anchor="middle">onClick={onOpenCart}</text>
+                <text x="635" y="180" fill="#94a3b8" font-size="9" text-anchor="middle">Slides Cart Drawer Open</text>
+              </svg>
+              <span class="visual-caption">Figure 8: High-Level Architecture of Navbar.tsx Layout &amp; Reactive Nodes</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+              <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan);">
+                <strong style="color: var(--accent-cyan); font-size: 1rem;">1. Sticky Glassmorphism</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+                  <code>position: 'sticky', top: 0, zIndex: 50</code> keeps the navigation anchored to the viewport as the user scrolls, while <code>glass-panel</code> renders a frosted glass blur backdrop.
+                </p>
+              </div>
+
+              <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+                <strong style="color: var(--accent-gold); font-size: 1rem;">2. Bespoke Brand Crest</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+                  The "S" crest combines a 135° gold metallic gradient (<code>#f59e0b ➔ #a8793b</code>) with high-contrast obsidian glyphs to evoke luxury haute-couture atelier vibes.
+                </p>
+              </div>
+
+              <div style="padding: 1.25rem; background: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-purple);">
+                <strong style="color: var(--accent-purple); font-size: 1rem;">3. Editorial Typography</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;">
+                  Pairs Playfair Display (<code>.serif</code>) for "StyleHome" with tracked uppercase sans-serif (<code>letterSpacing: '0.15em'</code>) for "Atelier Living".
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- POINT 3.8: Lines 42–111: Navigation Rail & Action Hub -->
+        <section class="card is-collapsed" id="nav-section-8">
+          <div class="card-header-clickable" onclick="toggleSection('nav-section-8')">
+            <div class="card-header-left">
+              <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">🛍️</div>
+              <div>
+                <h3 class="card-title" style="color: var(--accent-emerald);">Point 3.8: Lines 42–111 — Category Query Routing &amp; The Reactive Cart Badge</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Elasticsearch quick-launch, faceted category queries, and conditional pill badge rendering</p>
+              </div>
+            </div>
+            <div class="expand-badge"><span class="badge-text">Expand Details</span><span class="expand-chevron">▼</span></div>
+          </div>
+          <div class="collapsible-body">
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">📖 The Story of the Two Interactive Triggers</h4>
+              <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                The right side of the navbar features two powerful triggers:
+                <br>• <strong>Search Action:</strong> Clicking the magnifying glass runs <code>navigate('/search')</code>, instantly teleporting the user to the Elasticsearch search page without passing page state.
+                <br>• <strong>Cart Action &amp; Short-Circuit Badge:</strong> Notice lines 95–106:
+                <br><code>{totalItems &gt; 0 &amp;&amp; (&lt;span&gt;{totalItems}&lt;/span&gt;)}</code>
+                <br>When the cart is empty (<code>0</code>), the gold circle badge is completely removed from the DOM. As soon as the customer clicks "Add to Cart" anywhere on the site, the badge pops into existence reactively!
+              </p>
+            </div>
+            <pre><code><span class="token-comment">{/* Search Quick-Launcher */}</span>
+<span class="token-tag">&lt;button</span> <span class="token-func">onClick</span>={() =&gt; <span class="token-func">navigate</span>(<span class="token-str">'/search'</span>)} <span class="token-var">title</span>=<span class="token-str">"Search Products (Elasticsearch)"</span><span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;Search</span> <span class="token-var">size</span>={19} <span class="token-tag">/&gt;</span>
+<span class="token-tag">&lt;/button&gt;</span>
+
+<span class="token-comment">{/* Slide-over Cart Drawer Trigger with Reactive Pill */}</span>
+<span class="token-tag">&lt;button</span> <span class="token-func">onClick</span>={onOpenCart}<span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;ShoppingBag</span> <span class="token-var">size</span>={19} <span class="token-var">color</span>=<span class="token-str">"var(--accent-gold)"</span> <span class="token-tag">/&gt;</span>
+  <span class="token-tag">&lt;span&gt;</span>Cart<span class="token-tag">&lt;/span&gt;</span>
+  {totalItems &gt; 0 &amp;&amp; (
+    <span class="token-tag">&lt;span</span> <span class="token-keyword">className</span>=<span class="token-str">"badge-pill"</span><span class="token-tag">&gt;</span>{totalItems}<span class="token-tag">&lt;/span&gt;</span>
+  )}
+<span class="token-tag">&lt;/button&gt;</span></code></pre>
+          </div>
+        </section>
+
+      </div> <!-- End Chapter 3 collapsible body -->
+    </section> <!-- End Chapter 3 master card -->
+
+    <!-- Quick Summary Footer -->
+    <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding-top: 2rem;">
+      StyleHome E-Shop Documentation · Interactive Guide · Click any header to expand or collapse
+    </div>
+  </div>
+
+  <script>
+    // Toggle Chapter Master Card (Chapter 1, Chapter 2, or Chapter 3)
+    function toggleChapter(chapterId) {
+      const ch = document.getElementById(chapterId);
+      if (!ch) return;
+      const isCollapsed = ch.classList.toggle('is-collapsed');
+      const badgeText = ch.querySelector('.chapter-badge-text');
+      if (badgeText) {
+        if (chapterId === 'chapter-3') {
+          badgeText.textContent = isCollapsed ? 'Expand Chapter 3 (8 Points)' : 'Collapse Chapter 3';
+        } else if (chapterId === 'chapter-2') {
+          badgeText.textContent = isCollapsed ? 'Expand Chapter 2 (9 Points)' : 'Collapse Chapter 2';
+        } else {
+          badgeText.textContent = isCollapsed ? 'Expand Chapter 1 (7 Points)' : 'Collapse Chapter 1';
+        }
+      }
+    }
+
+    // Open and Scroll directly from code navigator
+    function openAndScrollTo(sectionId, chapterId = 'chapter-1') {
+      // 1. Ensure parent chapter is open
+      const ch = document.getElementById(chapterId);
+      if (ch && ch.classList.contains('is-collapsed')) {
+        ch.classList.remove('is-collapsed');
+        const chBadge = ch.querySelector('.chapter-badge-text');
+        if (chBadge) {
+          chBadge.textContent = chapterId === 'chapter-2' ? 'Collapse Chapter 2' : 'Collapse Chapter 1';
+        }
+      }
+
+      // 2. Expand the requested section
+      const sec = document.getElementById(sectionId);
+      if (!sec) return;
+      sec.classList.remove('is-collapsed');
+      const badgeText = sec.querySelector('.badge-text');
+      if (badgeText) badgeText.textContent = 'Collapse Details';
+      setTimeout(() => {
+        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    // Collapsible Logic for Individual Sections
+    function toggleSection(sectionId) {
+      const sec = document.getElementById(sectionId);
+      if (!sec) return;
+      const isCollapsed = sec.classList.toggle('is-collapsed');
+      const badgeText = sec.querySelector('.badge-text');
+      if (badgeText) {
+        badgeText.textContent = isCollapsed ? 'Expand Details' : 'Collapse Details';
+      }
+    }
+
+    // Toggle All Button Logic for Chapter 1
+    let allExpandedCh1 = false;
+    const btnToggleAll = document.getElementById('btn-toggle-all');
+    if (btnToggleAll) {
+      btnToggleAll.addEventListener('click', () => {
+        allExpandedCh1 = !allExpandedCh1;
+        const sections = ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'];
+        sections.forEach(id => {
+          const sec = document.getElementById(id);
+          if (!sec) return;
+          if (allExpandedCh1) {
+            sec.classList.remove('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Collapse Details';
+          } else {
+            sec.classList.add('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Expand Details';
+          }
+        });
+        btnToggleAll.textContent = allExpandedCh1 ? '📁 Collapse All Sections' : '📂 Expand All Sections';
+      });
+    }
+
+    // Toggle All Button Logic for Chapter 2 (App.tsx)
+    let allExpandedCh2 = false;
+    const btnToggleApp = document.getElementById('btn-toggle-app');
+    if (btnToggleApp) {
+      btnToggleApp.addEventListener('click', () => {
+        allExpandedCh2 = !allExpandedCh2;
+        const appSections = [
+          'app-section-1', 'app-section-2', 'app-section-3', 
+          'app-section-4', 'app-section-5', 'app-section-6', 
+          'app-section-7', 'app-section-8', 'app-section-9'
+        ];
+        appSections.forEach(id => {
+          const sec = document.getElementById(id);
+          if (!sec) return;
+          if (allExpandedCh2) {
+            sec.classList.remove('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Collapse Details';
+          } else {
+            sec.classList.add('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Expand Details';
+          }
+        });
+        btnToggleApp.textContent = allExpandedCh2 ? '📁 Collapse All 9 App Points' : '📂 Expand All 9 App Points';
+      });
+    }
+
+    // Toggle All Button Logic for Chapter 3 (Navbar.tsx)
+    let allExpandedCh3 = false;
+    const btnToggleNav = document.getElementById('btn-toggle-nav');
+    if (btnToggleNav) {
+      btnToggleNav.addEventListener('click', () => {
+        allExpandedCh3 = !allExpandedCh3;
+        const navSections = [
+          'nav-section-1', 'nav-section-2', 'nav-section-3', 
+          'nav-section-4', 'nav-section-5', 'nav-section-6', 
+          'nav-section-7', 'nav-section-8'
+        ];
+        navSections.forEach(id => {
+          const sec = document.getElementById(id);
+          if (!sec) return;
+          if (allExpandedCh3) {
+            sec.classList.remove('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Collapse Details';
+          } else {
+            sec.classList.add('is-collapsed');
+            const badgeText = sec.querySelector('.badge-text');
+            if (badgeText) badgeText.textContent = 'Expand Details';
+          }
+        });
+        btnToggleNav.textContent = allExpandedCh3 ? '📁 Collapse All 8 Navbar Points' : '📂 Expand All 8 Navbar Points';
+      });
+    }
+
+    // Simple interactive demo
+    let stateCount = 0;
+    let refCount = 0;
+    let renderCount = 1;
+
+    const btnState = document.getElementById('btn-state');
+    const btnRef = document.getElementById('btn-ref');
+    const valState = document.getElementById('val-state');
+    const valRef = document.getElementById('val-ref');
+    const renderLog = document.getElementById('render-log');
+
+    btnState.addEventListener('click', () => {
+      stateCount++;
+      renderCount++;
+      valState.textContent = stateCount;
+      renderLog.textContent = `Render Count: ${renderCount} (Re-rendered!)`;
+      renderLog.style.borderColor = 'var(--accent-gold)';
+      renderLog.style.color = 'var(--accent-gold)';
+      setTimeout(() => {
+        renderLog.style.borderColor = 'var(--border-color)';
+        renderLog.style.color = 'inherit';
+      }, 500);
+    });
+
+    btnRef.addEventListener('click', () => {
+      refCount++;
+      valRef.textContent = refCount;
+      renderLog.textContent = `Render Count: ${renderCount} (No Re-render triggered)`;
+    });
+  </script>
+</body>
+</html>

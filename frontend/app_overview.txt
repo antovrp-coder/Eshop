@@ -1,0 +1,32 @@
+================================================================================
+STYLEHOME FRONTEND APPLICATION OVERVIEW
+Location: frontend/
+Framework: React 18 + Vite + TypeScript
+================================================================================
+
+1. OVERVIEW
+   This directory houses the modern React 18 single page application (SPA)
+   for StyleHome Atelier Living & Architectural Furniture.
+
+2. KEY ROUTES & PAGES
+   - /             : Home Page with curated hero and collections
+   - /search       : Elasticsearch faceted catalog and instant search
+   - /product/:slug: Product detail page with 3D/high-res gallery and variants
+   - /checkout     : Secure checkout with payment simulation
+   - /orders       : Order history and real-time status tracking
+   - /text         : Architectural manifesto and design essay
+
+3. DESIGN SYSTEM & TOKENS
+   - Stylesheet    : src/index.css
+   - Color Palette : Dark warm luxury (#0d0f12, #14171d, #1c212a, accent gold #e2b170)
+   - Fonts         : Plus Jakarta Sans (Sans-serif) & Playfair Display (Serif)
+
+4. SERVICES & BACKEND INTEGRATION
+   - GraphQL BFF   : http://localhost:8080/graphql
+   - Client        : src/services/graphqlClient.ts
+
+5. SCRIPTS
+   - npm run dev   : Start Vite local development server
+   - npm run build : Type-check with tsc and compile production bundle
+   - npm run preview: Preview production build locally
+================================================================================

@@ -33,7 +33,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
         {/* Background Image with Dark Vignette */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           <img
-            src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2000&q=85"
+            src="/images/hero-atelier.jpg"
             alt="StyleHome Atelier"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
