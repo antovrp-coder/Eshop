@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Management — Technology Stack Visibility Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-subtle: #f1f5f9;
+      --bg-surface-hover: #e2e8f0;
+      --border: #e2e8f0;
+      --border-focus: #cbd5e1;
+      
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-subtle: #64748b;
+      
+      --brand: #4f46e5;
+      --brand-light: #eef2ff;
+      --brand-glow: rgba(79, 70, 229, 0.15);
+      
+      --accent-cyan: #0284c7;
+      --accent-cyan-light: #f0f9ff;
+      --accent-green: #16a34a;
+      --accent-green-light: #f0fdf4;
+      --accent-amber: #d97706;
+      --accent-amber-light: #fffbeb;
+      --accent-purple: #9333ea;
+      --accent-purple-light: #faf5ff;
+      --accent-red: #dc2626;
+      --accent-red-light: #fef2f2;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-text p {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-nav-guide {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      background: var(--brand);
+      color: white;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px var(--brand-glow);
+    }
+
+    .btn-nav-guide:hover {
+      background: #4338ca;
+      transform: translateY(-1px);
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* STATS OVERVIEW CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-info h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-subtle);
+      margin-bottom: 4px;
+    }
+
+    .stat-info .stat-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .stat-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .badge-all { background: var(--brand-light); color: var(--brand); }
+    .badge-enabled { background: var(--accent-green-light); color: var(--accent-green); }
+    .badge-disabled { background: var(--accent-red-light); color: var(--accent-red); }
+
+    /* INSTRUCTION BANNER */
+    .admin-callout {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .admin-callout-text {
+      color: #92400e;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .admin-callout-text strong {
+      color: #78350f;
+    }
+
+    /* TOOLBAR CONTROLS */
+    .admin-toolbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      max-width: 420px;
+      min-width: 240px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-surface-subtle);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      background: var(--bg-surface);
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      font-size: 0.85rem;
+    }
+
+    .batch-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--text-main);
+      border-color: #cbd5e1;
+    }
+
+    .btn-enable-all:hover {
+      background: var(--accent-green-light);
+      color: var(--accent-green);
+      border-color: #bbf7d0;
+    }
+
+    .btn-disable-all:hover {
+      background: var(--accent-red-light);
+      color: var(--accent-red);
+      border-color: #fecaca;
+    }
+
+    /* CATEGORY PILLS */
+    .category-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    .cat-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .cat-btn:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--text-main);
+    }
+
+    .cat-btn.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+
+    /* TECHNOLOGY TABLE / LIST */
+    .admin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .admin-row {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admin-row:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-md);
+    }
+
+    .admin-row.is-disabled {
+      background: #fbfcfd;
+      opacity: 0.72;
+      border-style: dashed;
+    }
+
+    .row-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tech-icon-box {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .row-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .row-title-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .row-tech-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .tech-category-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      display: inline-block;
+    }
+
+    .row-tech-summary {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 600px;
+    }
+
+    .row-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-shrink: 0;
+    }
+
+    .status-tag {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-enabled {
+      background: var(--accent-green-light);
+      color: var(--accent-green);
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-disabled {
+      background: #f1f5f9;
+      color: var(--text-subtle);
+      border: 1px solid #e2e8f0;
+    }
+
+    /* MODERN TOGGLE SWITCH */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+      background-color: var(--brand);
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--brand);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #0f172a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* CATEGORY COLOR PALETTES */
+    .cat-frontend { background: var(--accent-cyan-light); color: var(--accent-cyan); }
+    .cat-backend { background: var(--brand-light); color: var(--brand); }
+    .cat-database { background: var(--accent-purple-light); color: var(--accent-purple); }
+    .cat-event { background: var(--accent-amber-light); color: var(--accent-amber); }
+    .cat-devops { background: #f1f5f9; color: #475569; }
+
+    .icon-frontend { background: var(--accent-cyan-light); color: var(--accent-cyan); }
+    .icon-backend { background: var(--brand-light); color: var(--brand); }
+    .icon-database { background: var(--accent-purple-light); color: var(--accent-purple); }
+    .icon-event { background: var(--accent-amber-light); color: var(--accent-amber); }
+    .icon-devops { background: #e2e8f0; color: #334155; }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-subtle);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand-wrap">
+        <div class="brand-badge">⚙️</div>
+        <div class="brand-text">
+          <h1>Technology Stack Admin Panel</h1>
+          <p>StyleHome (Eshop) — Technology Visibility & Listing Manager</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="security_features_guide.html" class="btn-nav-guide" style="background: #0284c7; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);">
+          <span>🛡️</span> Security Guide
+        </a>
+        <a href="technology_stack_guide.html" class="btn-nav-guide">
+          <span>📖</span> View Public Guide
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    
+    <!-- STATS OVERVIEW CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Total Technologies</h3>
+          <div class="stat-number" id="stat-total">16</div>
+        </div>
+        <div class="stat-badge badge-all">📦</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Enabled (Visible)</h3>
+          <div class="stat-number" id="stat-enabled" style="color: var(--accent-green);">16</div>
+        </div>
+        <div class="stat-badge badge-enabled">👁️</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Disabled (Hidden)</h3>
+          <div class="stat-number" id="stat-disabled" style="color: var(--accent-red);">0</div>
+        </div>
+        <div class="stat-badge badge-disabled">🚫</div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTION BANNER -->
+    <div class="admin-callout">
+      <div class="admin-callout-text">
+        <strong>Control Which Technologies Appear:</strong> Toggle any technology ON or OFF below. Only <strong>enabled</strong> technologies will be listed in the <a href="technology_stack_guide.html" style="color: var(--brand); font-weight: 700;">Technology Stack Guide</a>. All settings persist automatically across browser sessions.
+      </div>
+      <div>
+        <a href="technology_stack_guide.html" class="btn-action" style="background: white; border-color: #fde68a; color: #92400e;">
+          Go to Guide & Check Live Output →
+        </a>
+      </div>
+    </div>
+
+    <!-- TOOLBAR CONTROLS -->
+    <div class="admin-toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="adminSearch" placeholder="Filter technologies by name, purpose, or category..." oninput="filterAdminList()">
+      </div>
+
+      <div class="batch-actions">
+        <button class="btn-action btn-enable-all" onclick="setAllVisibility(true)" title="Enable all technologies">
+          <span>✅</span> Enable All
+        </button>
+        <button class="btn-action btn-disable-all" onclick="setAllVisibility(false)" title="Hide all technologies">
+          <span>❌</span> Disable All
+        </button>
+        <button class="btn-action" onclick="resetToDefaults()" title="Reset to initial default state">
+          <span>🔄</span> Reset Defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- CATEGORY FILTER PILLS -->
+    <div class="category-filter-bar">
+      <button class="cat-btn active" onclick="setAdminCategory('all')">All Categories</button>
+      <button class="cat-btn" onclick="setAdminCategory('frontend')">🖥️ Frontend</button>
+      <button class="cat-btn" onclick="setAdminCategory('backend')">⚙️ Backend</button>
+      <button class="cat-btn" onclick="setAdminCategory('database')">🗄️ Database</button>
+      <button class="cat-btn" onclick="setAdminCategory('event')">📨 Event Streaming</button>
+      <button class="cat-btn" onclick="setAdminCategory('devops')">🐳 DevOps</button>
+    </div>
+
+    <!-- LIST OF TECHNOLOGIES -->
+    <div class="admin-list" id="adminList">
+      <!-- Rows rendered dynamically via JavaScript -->
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container">
+    <div class="toast" id="toastBox">
+      <span id="toastIcon">💾</span>
+      <span id="toastMessage">Changes saved successfully</span>
+    </div>
+  </div>
+
+  <footer>
+    StyleHome Architecture Administration • Technology Visibility Management Console
+  </footer>
+
+  <script>
+    // COMPLETE TECHNOLOGY STACK DATA WITH MATCHING IDS
+    const techData = [
+      {
+        id: "react",
+        name: "React 18.2",
+        category: "frontend",
+        categoryLabel: "Frontend",
+        icon: "⚛️",
+        summary: "Modern declarative component-based UI library with concurrent rendering for stateful e-commerce interactions."
+      },
+      {
+        id: "typescript",
+        name: "TypeScript 5.2",
+        category: "frontend",
+        categoryLabel: "Frontend",
+        icon: "🔷",
+        summary: "Statically typed superset of JavaScript enforcing strict type contracts across all frontend components and API responses."
+      },
+      {
+        id: "vite",
+        name: "Vite 5.1",
+        category: "frontend",
+        categoryLabel: "Frontend",
+        icon: "⚡",
+        summary: "Next-generation frontend tooling and bundler utilizing native ES modules for instantaneous Hot Module Replacement (HMR)."
+      },
+      {
+        id: "react-query",
+        name: "TanStack React Query v5",
+        category: "frontend",
+        categoryLabel: "Frontend",
+        icon: "🔄",
+        summary: "Asynchronous state management and caching library for server data synchronization, deduplication, and background invalidation."
+      },
+      {
+        id: "react-router",
+        name: "React Router DOM v6",
+        category: "frontend",
+        categoryLabel: "Frontend",
+        icon: "🧭",
+        summary: "Standard client-side routing library for Single-Page Applications with declarative URL routing and navigation guards."
+      },
+      {
+        id: "go",
+        name: "Go 1.26 (Pure Standard Library)",
+        category: "backend",
+        categoryLabel: "Backend",
+        icon: "🐹",
+        summary: "High-concurrency compiled systems language leveraging lightweight goroutines (~2KB RAM) for high-scale network services."
+      },
+      {
+        id: "zero-framework",
+        name: "net/http Middleware Pipeline",
+        category: "backend",
+        categoryLabel: "Backend",
+        icon: "🧱",
+        summary: "Zero-framework HTTP architecture using idiomatic Go functional middleware composition without Gin, Fiber, or Echo."
+      },
+      {
+        id: "graphql-bff",
+        name: "GraphQL BFF & Fan-Out Resolvers",
+        category: "backend",
+        categoryLabel: "Backend",
+        icon: "📐",
+        summary: "Backend-For-Frontend gateway consolidating microservice domains into unified query responses using parallel goroutines."
+      },
+      {
+        id: "grpc",
+        name: "gRPC & Protocol Buffers v3",
+        category: "backend",
+        categoryLabel: "Backend",
+        icon: "⚡",
+        summary: "High-throughput binary RPC protocol over HTTP/2 with strict contract schemas, multiplexing, and header compression."
+      },
+      {
+        id: "saga",
+        name: "Distributed Saga Orchestrator",
+        category: "backend",
+        categoryLabel: "Backend",
+        icon: "🔄",
+        summary: "Architectural transaction manager coordinating distributed operations with automated compensating rollbacks."
+      },
+      {
+        id: "postgres",
+        name: "PostgreSQL 16 (Database: Eshop)",
+        category: "database",
+        categoryLabel: "Database",
+        icon: "🐘",
+        summary: "World's most advanced open-source relational database with ACID guarantees, multi-schema isolation, and row-level locking."
+      },
+      {
+        id: "redis",
+        name: "Redis 7 (In-Memory Cluster)",
+        category: "database",
+        categoryLabel: "Cache & Store",
+        icon: "🔴",
+        summary: "Ultra-fast in-memory key-value data store operating with sub-millisecond data retrieval and distributed data structures."
+      },
+      {
+        id: "elasticsearch",
+        name: "Elasticsearch 8.12.2",
+        category: "database",
+        categoryLabel: "Search Engine",
+        icon: "🔎",
+        summary: "Distributed RESTful search and analytics engine with BM25 inverted index relevance and edge n-gram tokenizers."
+      },
+      {
+        id: "kafka",
+        name: "Apache Kafka 7.6.0 & Outbox Worker",
+        category: "event",
+        categoryLabel: "Event Streaming",
+        icon: "📨",
+        summary: "Distributed event streaming platform capable of handling trillions of events daily with durable partition logs."
+      },
+      {
+        id: "docker",
+        name: "Docker & Multi-Stage Builds",
+        category: "devops",
+        categoryLabel: "DevOps",
+        icon: "🐳",
+        summary: "Containerization platform packaging applications and dependencies into isolated, reproducible runtime environments."
+      },
+      {
+        id: "docker-compose",
+        name: "Docker Compose Infrastructure Mesh",
+        category: "devops",
+        categoryLabel: "DevOps",
+        icon: "🚢",
+        summary: "Multi-container orchestration tool coordinating services, volumes, network meshes, and automated health checks."
+      }
+    ];
+
+    const STORAGE_KEY = 'eshop_tech_visibility';
+    let currentAdminCategory = 'all';
+
+    // Load or initialize visibility settings
+    function getVisibilityMap() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          return JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error("Failed to read visibility from localStorage", e);
+      }
+      
+      // Default: All technologies are enabled
+      const defaults = {};
+      techData.forEach(t => {
+        defaults[t.id] = true;
+      });
+      return defaults;
+    }
+
+    function saveVisibilityMap(map) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {
+        console.error("Failed to save visibility to localStorage", e);
+      }
+      updateStats();
+    }
+
+    function updateStats() {
+      const visibility = getVisibilityMap();
+      let enabledCount = 0;
+      techData.forEach(t => {
+        if (visibility[t.id] !== false) enabledCount++;
+      });
+      const disabledCount = techData.length - enabledCount;
+
+      document.getElementById('stat-total').textContent = techData.length;
+      document.getElementById('stat-enabled').textContent = enabledCount;
+      document.getElementById('stat-disabled').textContent = disabledCount;
+    }
+
+    function renderAdminList() {
+      const listContainer = document.getElementById('adminList');
+      listContainer.innerHTML = '';
+
+      const query = document.getElementById('adminSearch').value.toLowerCase().trim();
+      const visibility = getVisibilityMap();
+
+      const filtered = techData.filter(item => {
+        const matchesCategory = (currentAdminCategory === 'all' || item.category === currentAdminCategory);
+        const matchesQuery = !query ||
+          item.name.toLowerCase().includes(query) ||
+          item.summary.toLowerCase().includes(query) ||
+          item.categoryLabel.toLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <p style="font-size: 1rem; color: #64748b; font-weight: 600;">No technologies match your filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(tech => {
+        const isEnabled = visibility[tech.id] !== false;
+        const row = document.createElement('div');
+        row.className = `admin-row ${isEnabled ? '' : 'is-disabled'}`;
+        row.id = `row-${tech.id}`;
+
+        row.innerHTML = `
+          <div class="row-left">
+            <div class="tech-icon-box icon-${tech.category}">
+              ${tech.icon}
+            </div>
+            <div class="row-info">
+              <div class="row-title-line">
+                <span class="row-tech-name">${tech.name}</span>
+                <span class="tech-category-pill cat-${tech.category}">${tech.categoryLabel}</span>
+              </div>
+              <div class="row-tech-summary" title="${escapeHtml(tech.summary)}">
+                ${tech.summary}
+              </div>
+            </div>
+          </div>
+
+          <div class="row-right">
+            <span class="status-tag ${isEnabled ? 'status-enabled' : 'status-disabled'}" id="status-tag-${tech.id}">
+              ${isEnabled ? '● Visible' : '○ Hidden'}
+            </span>
+            <label class="switch" title="Toggle visibility in Public Guide">
+              <input type="checkbox" id="toggle-${tech.id}" ${isEnabled ? 'checked' : ''} onchange="toggleTechVisibility('${tech.id}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        `;
+
+        listContainer.appendChild(row);
+      });
+
+      updateStats();
+    }
+
+    function toggleTechVisibility(techId, isEnabled) {
+      const visibility = getVisibilityMap();
+      visibility[techId] = isEnabled;
+      saveVisibilityMap(visibility);
+
+      // Update UI row state immediately
+      const row = document.getElementById(`row-${techId}`);
+      if (row) {
+        row.classList.toggle('is-disabled', !isEnabled);
+      }
+
+      const statusTag = document.getElementById(`status-tag-${techId}`);
+      if (statusTag) {
+        statusTag.className = `status-tag ${isEnabled ? 'status-enabled' : 'status-disabled'}`;
+        statusTag.textContent = isEnabled ? '● Visible' : '○ Hidden';
+      }
+
+      const tech = techData.find(t => t.id === techId);
+      const techName = tech ? tech.name : techId;
+      showToast(isEnabled ? `✅ "${techName}" is now VISIBLE in the guide` : `🚫 "${techName}" is now HIDDEN from the guide`);
+    }
+
+    function setAllVisibility(enable) {
+      const visibility = getVisibilityMap();
+      techData.forEach(t => {
+        visibility[t.id] = enable;
+      });
+      saveVisibilityMap(visibility);
+      renderAdminList();
+      showToast(enable ? '✅ All 16 technologies are now VISIBLE' : '🚫 All technologies are now HIDDEN');
+    }
+
+    function resetToDefaults() {
+      if (confirm('Reset visibility settings to default (all technologies visible)?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderAdminList();
+        showToast('🔄 Restored default settings: All technologies visible');
+      }
+    }
+
+    function setAdminCategory(cat) {
+      currentAdminCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      renderAdminList();
+    }
+
+    function filterAdminList() {
+      renderAdminList();
+    }
+
+    let toastTimer = null;
+    function showToast(message) {
+      const box = document.getElementById('toastBox');
+      const msg = document.getElementById('toastMessage');
+      msg.textContent = message;
+      box.classList.add('show');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.remove('show');
+      }, 2400);
+    }
+
+    function escapeHtml(string) {
+      return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initial render
+    renderAdminList();
+  </script>
+</body>
+</html>
